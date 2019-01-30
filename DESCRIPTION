@@ -1,0 +1,21 @@
+Package: GitItSheaGitIt
+Type: Package
+Title: Shea Collection of Functions
+Version: 0.1.0
+Author: c(
+  person("Shea", "Fyffe", email = "shea.fyffe@gmail.com", role = c("aut", "cre")))
+Maintainer: <shea.fyffe@gmail.com>
+Description: This package contains tools (functions) that I've created while working in Psychometrics as well as my time as a I/O Psychology Student.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports: pacman, RODBC
+Suggests:
+    MplusAutomation,
+    haven,
+    rvest,
+    xml2,
+    ggplot2,
+    plyr,
+    reshape2
+RoxygenNote: 6.0.1
