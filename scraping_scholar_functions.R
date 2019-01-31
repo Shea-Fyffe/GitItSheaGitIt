@@ -90,29 +90,33 @@ build_search <- function(...) {
 #'@export
 #'@import curl rvest xml2
 NULL
-scrape <- function(url, verbose = FALSE){
-  my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = "Chrome/60.0.3112.113")))
+scrape <- function(url, user_agent = NULL, verbose = FALSE){
+  if(is.null(user_agent)){
+  my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36"                                                                    )))
+  } else {
+    my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent)))
+  }
     if(verbose){
       return(xml2::html_structure(my_page))
     } else {
         .title <- rvest::html_text(rvest::html_nodes(my_page, ".gs_rt"), trim = TRUE)
         .info <- rvest::html_text(rvest::html_nodes(my_page, ".gs_a"), trim = TRUE)
-        .abs <- rvest::html_text(rvest::html_nodes(my_page, ".gs_rt"), trim = TRUE)
+        .abs <- rvest::html_text(rvest::html_nodes(my_page, ".gs_rs"), trim = TRUE)
         .url <- rvest::html_nodes(my_page, ".gs_ri h3 a")
         .url <- rvest::html_attr(.url, "href")
         #clean strings
-        .auth <- gsub("-.*", "", .info)
+        .auth <- gsub("-\\s.*", "", .info)
         .auth <- trimws(.auth)
-        .auth <- gsub(".", " et al.", .auth)
-        .info <- sapply(strsplit(.info, "-"), `[`, 2)
-        .journ <- gsub(",.*", "", .info)
+        .info <- strsplit(.info, "\\s-\\s")
+        .info <- sapply(.info, `[`, 2)
+        .journ <- gsub("\\d{4}", "", .info)
+        .journ <- gsub(", ", "", .journ)
         .journ <- trimws(.journ)
-        .date <- gsub(".*,", "",  .info)
+        .journ <- tolower(.journ)
+        .date <- gsub(".*(\\d{4})", "\\1", .info)
         .date <- trimws(.date)
         .title <- gsub("\\[[^\\]]*\\]", "", .title, perl=TRUE)
-        .abs <- gsub("\\[[^\\]]*\\]", "", .abs, perl=TRUE)
-        .abs <- gsub(".", "", .abs, perl=TRUE)
-        .abs <- paste(.abs, collapse  = " ")
+        .abs <- gsub("[^[:alnum:][:blank:]+?&/\\-]", " ", .abs, perl=TRUE)
         #build result
         .out <- list(Title = .title, Author = .auth, Journal = .journ, Year = .date, Link = .url, Abstract = .abs)
         if(all(sapply(.out, length)==length(.out[[1]]))){
