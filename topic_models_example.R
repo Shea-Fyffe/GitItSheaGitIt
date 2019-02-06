@@ -8,7 +8,7 @@
 #Add some help functions and options, then load packages
 #' @author Danielle Smith
 #' @details \link{https://gist.github.com/smithdanielle/9913897}
-source('E:/Jen\'s Stuff/R Utils/POS_script.R')
+source('%USERNAME%/R Utils/POS_script.R')
 check.packages <- function(pkg){
   options(repos=structure(c(CRAN="http://cloud.r-project.org/")))
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
