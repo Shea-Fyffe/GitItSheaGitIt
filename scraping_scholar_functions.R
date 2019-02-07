@@ -13,8 +13,16 @@ scrape_scholar <- function(...) {
   .url <- build_search(...)
   .out <- list()
   for(i in seq(length(.url))) {
-    .out[[i]] <- scrape(.url[i])
-    Sys.sleep(sample(3, 1))
+    .out[[i]] <- try(scrape(.url[i]))
+    if(class(.out[[i]]) == "try-error") {
+      if(length(.out > 1)) {
+      return(.out[[-i]])
+      } else {
+        return(warning("error with function, please use build_search() to manually browse URLS"))
+      }
+    } else {
+    Sys.sleep(sample(5, 1))
+    }
   }
   .out <- do.call("rbind", .out)
   return(.out)
@@ -92,7 +100,9 @@ build_search <- function(...) {
 NULL
 scrape <- function(url, user_agent = NULL, verbose = FALSE){
   if(is.null(user_agent)){
-  my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36"                                                                    )))
+   .ua <- sample(c("Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36",
+                   "curl/7.19.6 Rcurl/1.95.4.1 httr/0.3","Mozilla/5.0"), 1) 
+    my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" =  .ua)))
   } else {
     my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent)))
   }
