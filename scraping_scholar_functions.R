@@ -13,14 +13,15 @@ scrape_scholar <- function(...) {
   .url <- build_search(...)
   .out <- list()
   for(i in seq(length(.url))) {
-    .out[[i]] <- try(scrape(.url[i]))
-    if(class(.out[[i]]) == "try-error") {
+    .tmp <- try(scrape(.url[i]))
+    if(class(.tmp) == "try-error") {
       if(length(.out > 1)) {
-      return(.out[[-i]])
+      return(.out)
       } else {
         return(warning("error with function, please use build_search() to manually browse URLS"))
       }
     } else {
+    .out[[i]] <- .tmp
     Sys.sleep(sample(5, 1))
     }
   }
