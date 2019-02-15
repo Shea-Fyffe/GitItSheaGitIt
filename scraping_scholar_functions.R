@@ -120,6 +120,7 @@ scrape <- function(url, user_agent = NULL, verbose = FALSE){
         .date <- trimws(.date)
         .title <- gsub("\\[[^\\]]*\\]", "", .title, perl=TRUE)
         .abs <- gsub("[^[:alnum:][:blank:]+?&/\\-]", " ", .abs, perl=TRUE)
+        .abs <- gsub("^\\s+|\\s+$", "", .abs)
         #build result
         .out <- list(Title = .title, Author = .auth, Journal = .journ, Year = .date, Link = .url, Abstract = .abs)
         if(all(sapply(.out, length)==length(.out[[1]]))){
