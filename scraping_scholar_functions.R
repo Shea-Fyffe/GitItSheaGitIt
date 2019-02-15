@@ -125,6 +125,7 @@ scrape <- function(url, user_agent = NULL, verbose = FALSE){
         if(all(sapply(.out, length)==length(.out[[1]]))){
           .out <- as.data.frame(.out, stringsAsFactors = FALSE)
         }
+        on.exit(closeAllConnections())
         return(.out)
     }
 }
