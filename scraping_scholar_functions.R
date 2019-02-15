@@ -1,6 +1,7 @@
 #' @Title Scraping Google Scholar
 #' @author Shea Fyffe sfyffe@@gmail.com
 #' @description Wrapper function that collect data from a Google Scholar Search
+#' @seealso \link{https://scholar.google.com/robots.txt} For preventing scraper from being caught.
 #' @param ... String to be passed to Google Scholar search. Use \code{max = } and \code{year = } to restirct number of articles returned as well as year.
 #' @examples \dontrun{
 #'                    ## Searches for 'Engagement' AND 'organizational behavior' and limits return to 250 
@@ -13,22 +14,14 @@ scrape_scholar <- function(...) {
   .url <- build_search(...)
   .out <- list()
   for(i in seq(length(.url))) {
-    .tmp <- try(scrape(.url[i]))
-    if(class(.tmp) == "try-error") {
-      if(length(.out > 1)) {
-      return(.out)
-      } else {
-        return(warning("error with function, please use build_search() to manually browse URLS"))
-      }
-    } else {
-    .out[[i]] <- .tmp
-    Sys.sleep(sample(5, 1))
+    .out[[i]] <- try(scrape(.url[i]))
+    if(inherits(.out[[i]], "try-error") & i > 1) {
+      return(.out[[-i]])
     }
+    Sys.sleep(sample(5, 1))
   }
-  .out <- do.call("rbind", .out)
   return(.out)
 }
-
 
 #' @Title Build Search
 #' @author Shea Fyffe sfyffe@@gmail.com
@@ -101,9 +94,8 @@ build_search <- function(...) {
 NULL
 scrape <- function(url, user_agent = NULL, verbose = FALSE){
   if(is.null(user_agent)){
-   .ua <- sample(c("Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36",
-                   "curl/7.19.6 Rcurl/1.95.4.1 httr/0.3","Mozilla/5.0"), 1) 
-    my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" =  .ua)))
+    .ua <- sample(c("Twitterbot", "Mozilla/5.0", "Edge/18.17763", "facebookexternalhit"), 1)
+  my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = .ua)))
   } else {
     my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent)))
   }
@@ -133,6 +125,7 @@ scrape <- function(url, user_agent = NULL, verbose = FALSE){
         if(all(sapply(.out, length)==length(.out[[1]]))){
           .out <- as.data.frame(.out, stringsAsFactors = FALSE)
         }
+        on.exit(closeAllConnections())
         return(.out)
     }
 }
