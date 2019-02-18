@@ -17,9 +17,11 @@ scrape_scholar <- function(...) {
     .out[[i]] <- try(scrape(.url[i]))
     if(inherits(.out[[i]], "try-error") & i > 1) {
       return(.out[[-i]])
-    } else if (i == 1){
+    } else if (inherits(.out[[i]], "try-error") & i == 1){
       stop(sprintf("open:%s and do the CAPTCHA", .url))
     }
+    #TODO(FIX THIS)
+    #sub('.*?start=(\\d+)&.*', '\\1', .url)
     Sys.sleep(sample(5, 1))
   }
   return(.out)
@@ -87,8 +89,6 @@ build_search <- function(...) {
   }
   return(.base)
 }
-
-
 #'@Title Scrape Child Function
 #'@Description This function actually does the scraping of Google Scholar
 #'@export
@@ -123,6 +123,7 @@ scrape <- function(url, user_agent = NULL, verbose = FALSE){
         .title <- gsub("\\[[^\\]]*\\]", "", .title, perl=TRUE)
         .abs <- gsub("[^[:alnum:][:blank:]+?&/\\-]", " ", .abs, perl=TRUE)
         .abs <- gsub("^\\s+|\\s+$", "", .abs)
+        .title <- gsub("^\\s+|\\s+$", "", .title)
         #build result
         .out <- list(Title = .title, Author = .auth, Journal = .journ, Year = .date, Link = .url, Abstract = .abs)
         if(all(sapply(.out, length)==length(.out[[1]]))){
@@ -141,4 +142,6 @@ n_pages <- function(html_page) {
   .pages <-  gsub(",", "", sub("About (.*?) results.*","\\1", .pages))
   .pages <- as.numeric(.pages) / 10
   return(.pages)
-  }
+}
+
+
