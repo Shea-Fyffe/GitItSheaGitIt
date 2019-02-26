@@ -121,12 +121,6 @@ n_pages <- function(html_page) {
   return(.pages)
 }
 
-#' TODO(Shea.Fyffe) -- start on this -- 02/26
-#'@Title just a helper that cleans
-clean_results <- function(x){
-  
-}
-
 #'@Title just a helper that finds if articles are missing nodes (i.e., Abstracts, links, etc.)
 #'@export
 #'@import rvest xml2
