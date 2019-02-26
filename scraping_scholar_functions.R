@@ -31,6 +31,7 @@ scrape_scholar <- function(...) {
 #' @author Shea Fyffe sfyffe@@gmail.com
 #' @description Helper function for scraping Google Scholar
 #' @param ... String to be passed to Google Scholar search. Use \code{min =}, \code{max = } and \code{year = } to restirict number of articles returned as well as year.
+#' @details \code{max = } will default to 100 if note explicitly defined.
 #' @examples \dontrun{
 #'                    ## Searches for 'Engagement' AND 'organizational behavior' and limits return to 250 
 #'                    res <- build_search("Engagement", "organizational behavior", max = 250)}
@@ -64,7 +65,7 @@ build_search <- function(...) {
   .search <- paste(.search, collapse = "+")
   if(all(.args)) {
     .max <- seq(as.numeric(.min), as.numeric(.max), by = 10)
-    .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1&as_sdt=%%2C47&as_ylo=%s&q=%s&btnG=", .max, .year, .search)
+    .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&q=%s&btnG=", .max, .year, .search)
   } else if (.args[1] & !.args[2] & !.args[3]) {
     .max <- seq(0, 100, by = 10)
     .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1&as_sdt=%%2C47&as_ylo=%s&q=%s&btnG=", .max, .year,.search)
@@ -104,34 +105,10 @@ scrape <- function(url, user_agent = NULL, verbose = FALSE){
     if(verbose){
       return(xml2::html_structure(my_page))
     } else {
-        .title <- rvest::html_text(rvest::html_nodes(my_page, ".gs_rt"), trim = TRUE)
-        .info <- rvest::html_text(rvest::html_nodes(my_page, ".gs_a"), trim = TRUE)
-        .abs <- rvest::html_text(rvest::html_nodes(my_page, ".gs_rs"), trim = TRUE)
-        .url <- rvest::html_nodes(my_page, ".gs_ri h3 a")
-        .url <- rvest::html_attr(.url, "href")
-        #clean strings
-        .auth <- gsub("-\\s.*", "", .info)
-        .auth <- trimws(.auth)
-        .info <- strsplit(.info, "\\s-\\s")
-        .info <- sapply(.info, `[`, 2)
-        .journ <- gsub("\\d{4}", "", .info)
-        .journ <- gsub(", ", "", .journ)
-        .journ <- trimws(.journ)
-        .journ <- tolower(.journ)
-        .date <- gsub(".*(\\d{4})", "\\1", .info)
-        .date <- trimws(.date)
-        .title <- gsub("\\[[^\\]]*\\]", "", .title, perl=TRUE)
-        .abs <- gsub("[^[:alnum:][:blank:]+?&/\\-]", " ", .abs, perl=TRUE)
-        .abs <- gsub("^\\s+|\\s+$", "", .abs)
-        .title <- gsub("^\\s+|\\s+$", "", .title)
-        #build result
-        .out <- list(Title = .title, Author = .auth, Journal = .journ, Year = .date, Link = .url, Abstract = .abs)
-        if(all(sapply(.out, length)==length(.out[[1]]))){
-          .out <- as.data.frame(.out, stringsAsFactors = FALSE)
-        }
+        .out <- parse_page(my_page)
+    }
         on.exit(closeAllConnections())
         return(.out)
-    }
 }
 
 
@@ -144,4 +121,87 @@ n_pages <- function(html_page) {
   return(.pages)
 }
 
+#' TODO(Shea.Fyffe) -- start on this -- 02/26
+#'@Title just a helper that cleans
+clean_results <- function(x){
+  
+}
+
+#'@Title just a helper that finds if articles are missing nodes (i.e., Abstracts, links, etc.)
+#'@export
+#'@import rvest xml2
+parse_page <- function(.html) {
+  .html <- rvest::html_nodes(.html, "div.gs_ri")
+  .html <- do.call(rbind, lapply(.html, function(x) {
+    Title <- tryCatch(xml2::xml_text(rvest::xml_node(x, ".gs_rt")), error=function(err) {NA})
+    Meta <- tryCatch(xml2::xml_text(rvest::xml_node(x, ".gs_a")), error=function(err) {NA})
+    Abstract <- tryCatch(xml2::xml_text(rvest::xml_node(x, ".gs_rs")), error=function(err) {NA})
+    Link <- tryCatch(rvest::html_attr(rvest::xml_node(x, "h3 a"), "href"), error=function(err) {NA})
+    x <- data.frame(Title, Meta, Abstract, Link, stringsAsFactors = FALSE)
+    return(x)
+  }))
+  .html <- .parsing_helper(.html)
+  .html <- data.frame(apply(.html, 2, function(x) parsing_helper(x)), stringsAsFactors = FALSE)
+  .html <- .html[c("Title", "Author", "Journal", "Year", "Link", "Abstract")]
+  
+  return(.html)
+  
+  
+  #children
+  parsing_helper <- function(.vec) {
+    .vec <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", .vec, perl=TRUE)
+    return(.vec)
+  }
+  .parsing_helper <- function(.df) {
+    .meta <- strsplit(.df$Meta, "-")
+    .meta <- lapply(.meta, .f)
+    .meta <- do.call("rbind", .meta)
+    .df$Title <- gsub("\\[[^\\]]*\\]", "", .df$Title, perl=TRUE)
+    .df$Abstract <- gsub("[^[:alnum:][:blank:]+?&/\\-]", " ", .df$Abstract, perl=TRUE)
+    .df$Abstract <- gsub("^Page\\s\\d+.", "", .df$Abstract)
+    .df$Meta <- NULL
+    .df <- cbind(.df, .meta)
+    return(.df)
+  }
+  .f <- function(.vec) {
+    if(length(.vec == 3)||length(.vec == 2)) {
+      Author <- gsub("\\s-.*", "", .vec[1])
+      if(grepl(",", .vec[2])) {
+        Date <- gsub(".*(\\d{4})", "\\1", .vec[2])
+        Journal <- gsub("^\\s(.+),.*", "\\1", .vec[2])
+      } else if (grepl("^\\d{4}$|^\\s\\d{4}$", .vec[2])) {
+        Date <- gsub(".*(\\d{4})", "\\1", .vec[2])
+        Journal <- NA
+      } else if (!grepl("^\\d{4}$|^\\s\\d{4}$", .vec[2])) {
+        Date <- NA
+        Journal <- .vec[2]
+      } else {
+        Date <- NA
+        Journal <- NA
+      }
+    } else if(length(.vec == 1)) {
+      if(grepl("([A-Z]+ )", .vec[1])) {
+        Author <- .vec[1]
+        Date <- NA
+        Journal <- NA
+      } else if(grepl("^\\d{4}$|^\\s\\d{4}$", .vec[1])) {
+        Author <- NA
+        Date <- gsub(".*(\\d{4})", "\\1", .vec[1])
+        Journal <- NA
+      } else if(!grepl("\\.", .vec[1])) {
+        Author <- NA
+        Date <- NA
+        Journal <- .vec[1]
+      } else {
+        Author <- NA
+        Date <- NA
+        Journal <- NA
+      }
+    }
+    .res <- data.frame(Author = Author, Journal = Journal, Year = Date, stringsAsFactors = FALSE)
+    return(.res)
+  }
+  
+  
+}
 
