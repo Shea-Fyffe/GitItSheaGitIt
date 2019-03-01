@@ -4,15 +4,15 @@
 #'
 #'
 #' @param .dir file directory of pdf(s)
-#' @param ... a character vector to be located in text of PDF \code{x}
+#' @param ... a character vector to filter out PDF file names
 #'
 #' @examples \example{
 #' \dontrun{
-#'   \code{pdf_text_files <- get_pdf_text(.dir = "%systemdrive%/Documents and Settings/All Users/Desktop", "words in pdf")
+#'   \code{pdf_text_files <- get_pdf_text(.dir = "%systemdrive%/Documents and Settings/All Users/Desktop", "words in pdf file name")
 #'         cat(pdf_text_files)}
 #'         }
 #' \dontrun{
-#'   \code{pdf_text_files <- get_pdf_text(.dir = "%systemdrive%/Documents and Settings/All Users/Desktop", c("words", "in", "pdf"))
+#'   \code{pdf_text_files <- get_pdf_text(.dir = "%systemdrive%/Documents and Settings/All Users/Desktop", c("Employee", "Engagement"))
 #'         cat(pdf_text_files)}
 #'         }
 #'            
