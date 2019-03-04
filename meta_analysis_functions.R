@@ -24,9 +24,15 @@ get_pdf_text<- function(.dir = getwd(), ...){
     .x <- readr::read_lines(.x)
     return(.x)
   }
+  Trim <- function(.x) {
+    if(missing(.x)||!is.character(.x)) stop("Please define x as a character vector")
+    .x <- gsub("\\s{2,}", " ", .x)
+    .x <- gsub("^\\s+|\\s+$", "", .x)
+    return(.x)
+  }
   .pdfs <- list.files(.dir, pattern = ".pdf$")
-  if(length(...)){
-    .fuzzy <- list(...)
+  .fuzzy <- list(...)
+  if(!!length(.fuzzy)){
     .fuzzy <- paste(.fuzzy, collapse = "|")
     if(any(grepl(.fuzzy, x = .pdfs, ignore.case = TRUE))) {
       .pdfs <- pdfs[grepl(.fuzzy, x = .pdfs, ignore.case = TRUE)]
@@ -35,5 +41,6 @@ get_pdf_text<- function(.dir = getwd(), ...){
     }
   }
   .res <- lapply(.pdfs, Rpdf)
+  .res <- lapply(.res, Trim)
   return(.res)
 }
