@@ -19,8 +19,6 @@
 #'
 #' @export
 arg_val <- function() {
-  #Helper functions
-  #get exam statuses
   #assign parent function call to .Call
   .Call <- sys.call(-1)
   #evaluate call given parent function environment and arguments passed to parent function
@@ -43,26 +41,5 @@ arg_val <- function() {
     missing.args <- missing.args[missing.args]
     if(any(missing.args)) stop(sprintf("Required argument missing %s", names(missing.args)))
   }
-  #validate character arguments based on function
-  #.Args <- lapply(.Args, valid.char, parent.call = .Call)
-  #validate date based on if date is a possible formal argument
-  # if(all(c("start_date", "end_date") %in% names(.Formals))) {
-  #   if(all(c("start_date","end_date") %in% names(.Args)) || ("start_date" %in% names(.Args) & !"end_date" %in% names(.Args))) {
-  #     if(!"end_date" %in% names(.Args)) {
-  #       `$`(.Args,"end_date") <- as.character(Sys.Date())
-  #     }
-  #     try(sapply(c(`$`(.Args,"start_date"),`$`(.Args,"end_date")), valid.date))
-  #     span <- difftime(`$`(.Args,"end_date"),`$`(.Args,"start_date"))
-  #     if(span < 0) {
-  #       stop("Please verify start_date is before end_date")
-  #     }
-  #     .date <- TRUE
-  #   } else if (!all(c("start_date","end_date") %in% names(.Args))){
-  #     .date <- FALSE
-  #   } else {
-  #     stop(sprintf("Please define %s",names(.Formals)[!names(.Formals) %in% names(.Args)]))
-  #   }
-  # }
   return(.Args)
-  
 }
