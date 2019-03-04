@@ -16,7 +16,8 @@ scrape_scholar <- function(...) {
   for(i in seq(length(.url))) {
     .out[[i]] <- try(scrape(.url[i]))
     if((inherits(.out[[i]], "try-error") || is.null(.out[[i]])) & i > 1) {
-      return(.out[[-i]])
+      .i <- i - 1L
+      return(.out[seq(.i)])
     } else if (inherits(.out[[i]], "try-error") & i == 1){
       stop(sprintf("open:%s and do the CAPTCHA", .url))
     } else {
