@@ -124,9 +124,9 @@ NULL
 scrape <- function(url, user_agent = NULL, verbose = FALSE){
   if(is.null(user_agent)){
     .ua <- sample(c("Twitterbot", "Mozilla/5.0", "Edge/18.17763", "curl/7.35.0", "Chrome/58.0.3029.110", "facebookexternalhit"), 1)
-    my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = .ua)))
+    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = .ua))), error= closeAllConnections())
   } else {
-    my_page <- xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent)))
+    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent))), error= closeAllConnections())
   }
     if(verbose){
       return(xml2::html_structure(my_page))
