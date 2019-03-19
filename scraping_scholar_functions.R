@@ -21,10 +21,11 @@ scrape_scholar <- function(...) {
     } else if (inherits(.out[[i]], "try-error") & i == 1){
       stop(sprintf("open:%s and do the CAPTCHA", .url[i]))
     } else {
-      .n <- as.numeric(sub('.*?start=(\\d+)hl.*', '\\1', .url[i]))
+      .n <- sub('.*?start=(\\d+)hl.*', '\\1', .url[i])
       if(is.na(.n)) {
         .n <- 10L *(i - 1L) 
       } else {
+      .n <- as.numeric(.n)
       .n <- seq(.n + 1L, .n + 10L)
       .out[[i]]$Article_Number <- .n
       }
