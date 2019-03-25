@@ -21,7 +21,7 @@ scrape_scholar <- function(...) {
     } else if (inherits(.out[[i]], "try-error") & i == 1){
       stop(sprintf("open:%s and do the CAPTCHA", .url[i]))
     } else {
-      .n <- sub('.*?start=(\\d+)hl.*', '\\1', .url[i])
+      .n <- sub('.*?start=(\\d+)&hl.*', '\\1', .url[i])
       if(is.na(.n)) {
         .n <- 10L *(i - 1L) 
       } else {
@@ -124,12 +124,15 @@ NULL
 scrape <- function(url, user_agent = NULL, verbose = FALSE){
   if(is.null(user_agent)){
     .ua <- sample(c("Twitterbot", "Mozilla/5.0", "Edge/18.17763", "curl/7.35.0", "Chrome/58.0.3029.110", "facebookexternalhit"), 1)
-    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = .ua))), error= closeAllConnections())
+    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = .ua))), error = function(err) {closeAllConnections(); stop(err)})
   } else {
-    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent))), error= closeAllConnections())
+    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent))), error = function(err) {closeAllConnections(); stop(err)})
   }
     if(verbose){
       return(xml2::html_structure(my_page))
+    } else if(is.na(my_page)){
+      on.exit(closeAllConnections())
+      return(invisible(my_page))
     } else {
         .out <- parse_page(my_page)
     }
