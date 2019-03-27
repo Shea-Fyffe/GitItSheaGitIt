@@ -124,16 +124,18 @@ build_search <- function(...) {
 #'@Title Scrape Child Function
 #'@Description This function actually does the scraping of Google Scholar
 #'@export
-#'@import curl rvest xml2
+#'@import curl rvest xml2 httr
 NULL
 scrape <- function(url, user_agent = NULL, verbose = FALSE){
   if(is.null(user_agent)){
-    user_agent <- sample(c("Twitterbot", "Mozilla/5.0", "Edge/18.17763", "curl/7.35.0", "Chrome/58.0.3029.110", "facebookexternalhit"), 1)
-    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent))), error = function(err) {stop(err)})
-  } else {
-    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent ))), error = function(err) {stop(err)})
+    user_agent <- sample(use_age(), 1)
   }
-    if(verbose){
+  
+  httr::set_config(httr::user_agent(user_agent))
+
+  my_page <- tryCatch(xml2::read_html(x = url), error = function(err) {stop(err)})
+    
+  if(verbose){
       return(xml2::html_structure(my_page))
     } else if(is.na(my_page)){
       on.exit(closeAllConnections())
@@ -227,3 +229,10 @@ parsing_helper <- function(.vec) {
   return(.res)
 }
 
+#' @title User-Agent Helper
+use_age <- function(){
+  .out <-c("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
+           "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:53.0) Gecko/20100101 Firefox/53.0",
+           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393")
+  return(.out)
+}
