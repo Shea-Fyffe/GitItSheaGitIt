@@ -71,7 +71,11 @@ build_search <- function(...) {
     .search[["min"]] <- NULL
   }
   .args <- c(exists(".year"),exists(".max"),exists(".min"))
+  if(is.recursive(.search)) {
+  .search <- sapply(unlist(.search), utils::URLencode)
+  } else {
   .search <- sapply(.search, utils::URLencode)
+  }
   .search <- paste(.search, collapse = "+")
   if(all(.args)) {
     .max <- seq(as.numeric(.min), as.numeric(.max), by = 10)
@@ -221,3 +225,4 @@ parsing_helper <- function(.vec) {
   .res <- data.frame(Author = Author, Journal = Journal, Year = Date, stringsAsFactors = FALSE)
   return(.res)
 }
+
