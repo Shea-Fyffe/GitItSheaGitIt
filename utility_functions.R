@@ -190,3 +190,13 @@ trim <- function(x) {
   x <- gsub("^\\s+|\\s+$", "", x)
  return(x)
 }
+
+#' @title Working item that will allow the pasting of strings
+#' TODO(shea.fyffe)
+paste_assign <- function() {
+  cat('Paste search string and hit enter twice')
+  x <- scan(what = "")
+  xa <- gsub('\\\\', '/', x)
+  writeClipboard(paste(xa, collapse=" "))
+  cat('Here\'s your de-windowsified path. (It\'s also on the clipboard.)\n', xa, '\n')
+}
