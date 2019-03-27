@@ -29,7 +29,8 @@ scrape_scholar <- function(...) {
       .n <- seq(.n + 1L, .n + 10L)
       .out[[i]]$Article_Number <- .n
       }
-      Sys.sleep(sample(5, 1))
+      .wait <- sample(5:10, 1) * (1 / (10 / length(.out)))
+      Sys.sleep(.wait)
     }
   }
   return(.out)
@@ -127,10 +128,10 @@ build_search <- function(...) {
 NULL
 scrape <- function(url, user_agent = NULL, verbose = FALSE){
   if(is.null(user_agent)){
-    .ua <- sample(c("Twitterbot", "Mozilla/5.0", "Edge/18.17763", "curl/7.35.0", "Chrome/58.0.3029.110", "facebookexternalhit"), 1)
-    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = .ua))), error = function(err) {closeAllConnections(); stop(err)})
+    user_agent <- sample(c("Twitterbot", "Mozilla/5.0", "Edge/18.17763", "curl/7.35.0", "Chrome/58.0.3029.110", "facebookexternalhit"), 1)
+    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent))), error = function(err) {stop(err)})
   } else {
-    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent))), error = function(err) {closeAllConnections(); stop(err)})
+    my_page <- tryCatch(xml2::read_html(curl::curl(url, handle = curl::new_handle("useragent" = user_agent ))), error = function(err) {stop(err)})
   }
     if(verbose){
       return(xml2::html_structure(my_page))
