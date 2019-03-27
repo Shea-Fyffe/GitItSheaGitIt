@@ -22,11 +22,12 @@ scrape_scholar <- function(...) {
       stop(sprintf("open:%s and do the CAPTCHA", .url[i]))
     } else {
       .n <- sub('.*?start=(\\d+)&hl.*', '\\1', .url[i])
+      .nn <- nrow(.out[[i]])
       if(is.na(.n)) {
-        .n <- 10L *(i - 1L) 
+        .n <- .nn *(i - 1L) 
       } else {
       .n <- as.numeric(.n)
-      .n <- seq(.n + 1L, .n + 10L)
+      .n <- seq(.n + 1L, .n + .nn)
       .out[[i]]$Article_Number <- .n
       }
       .wait <- sample(5:10, 1) * (1 / (10 / length(.out)))
