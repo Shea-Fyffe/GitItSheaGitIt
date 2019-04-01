@@ -15,7 +15,7 @@ scrape_scholar <- function(...) {
   .out <- list()
   for(i in seq(length(.url))) {
     .out[[i]] <- try(scrape(.url[i]))
-    if((inherits(.out[[i]], "try-error") || is.null(.out[[i]])) & i > 1) {
+    if((inherits(.out[[i]], "try-error") || is.na(.out[[i]])) & i > 1) {
       .i <- i - 1L
       return(.out[seq(.i)])
     } else if (inherits(.out[[i]], "try-error") & i == 1){
@@ -168,11 +168,14 @@ parse_page <- function(.html) {
     x <- data.frame(Title, Meta, Abstract, Link, stringsAsFactors = FALSE)
     return(x)
   }))
+  if(is.null(.html)) {
+    return(NA)
+  } else {
   .html <- .parsing_helper(.html)
   .html <- data.frame(apply(.html, 2, function(x) parsing_helper(x)), stringsAsFactors = FALSE)
   .html <- .html[c("Title", "Author", "Journal", "Year", "Link", "Abstract")]
-  
   return(.html)
+  }
 }
 ####children
 parsing_helper <- function(.vec) {
