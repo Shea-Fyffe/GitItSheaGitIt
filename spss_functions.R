@@ -2,7 +2,7 @@
 #' @author Shea Fyffe email: shea.fyffe@@gmail.com
 #' @import haven
 #' @family SPSS
-get_spss <- function(dir = getwd(), var.pattern = NULL, reverse = FALSE){
+get_spss <- function(dir = getwd(), var.pattern = NULL){
   if(!dir.exists(dir)){
     stop("Please specify correct directory")
   }
