@@ -18,7 +18,7 @@ scrape_scholar <- function(...) {
     if((inherits(.out[[i]], "try-error") || is.na(.out[[i]])) & i > 1) {
       .i <- i - 1L
       return(.out[seq(.i)])
-    } else if (inherits(.out[[i]], "try-error") & i == 1){
+    } else if ((inherits(.out[[i]], "try-error") || is.na(.out[[i]])) & i == 1){
       stop(sprintf("open:%s and check for CAPTCHA and/or mispellings", .url[i]))
     } else {
       .n <- sub('.*?start=(\\d+)&hl.*', '\\1', .url[i])
