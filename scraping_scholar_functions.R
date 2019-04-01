@@ -19,7 +19,7 @@ scrape_scholar <- function(...) {
       .i <- i - 1L
       return(.out[seq(.i)])
     } else if (inherits(.out[[i]], "try-error") & i == 1){
-      stop(sprintf("open:%s and do the CAPTCHA", .url[i]))
+      stop(sprintf("open:%s and check for CAPTCHA and/or mispellings", .url[i]))
     } else {
       .n <- sub('.*?start=(\\d+)&hl.*', '\\1', .url[i])
       .nn <- nrow(.out[[i]])
