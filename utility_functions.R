@@ -200,3 +200,21 @@ paste_assign <- function() {
   writeClipboard(paste(xa, collapse=" "))
   cat('Here\'s your de-windowsified path. (It\'s also on the clipboard.)\n', xa, '\n')
 }
+
+#' @title Download github files from GitItSheaGitIt
+#'
+#' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
+#' @family Utilities
+#' @export
+download_code <- function (git_file) {
+  tmp <- tempfile()
+  .git_file <- sprintf("https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/%s", git_file)
+  .git_file  <- tryCatch(RCurl::getURL(.git_file, ssl.verifypeer = FALSE), error=function(err) {NA})
+  if(is.na(.git_file)) {
+    stop(sprintf("Error pulling file verify that %s is a valid file name", git_file))
+  }
+  con <- file(tmp, "w")
+  writeLines(.git_file, con = con)
+  close(con)
+  source(tmp)
+}
