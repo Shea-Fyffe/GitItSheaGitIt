@@ -82,43 +82,43 @@ build_search <- function(...) {
   if(all(.args)) {
     .max <- seq(as.numeric(.min), as.numeric(.max), by = 10)
     if(length(.year)==2L) {
-      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&as_yhi=%s&q=%s&btnG=", .max, .year[1], .year[2], .search)
+      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=0,47&as_ylo=%s&as_yhi=%s&q=%s&btnG=", .max, .year[1], .year[2], .search)
     } else {
-      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&q=%s&btnG=", .max, .year, .search) 
+      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=0,47&as_ylo=%s&q=%s&btnG=", .max, .year, .search) 
     }
   } else if (.args[1] & !.args[2] & !.args[3]) {
     .max <- seq(0, 250, by = 10)
     if(length(.year)==2L) {
-      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&as_yhi=%s&q=%s&btnG=", .max, .year[1], .year[2], .search)
+      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=0,47&as_ylo=%s&as_yhi=%s&q=%s&btnG=", .max, .year[1], .year[2], .search)
     } else {
-      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&q=%s&btnG=", .max, .year, .search) 
+      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=0,47&as_ylo=%s&q=%s&btnG=", .max, .year, .search) 
     }
   } else if (!.args[1] & (.args[2] & .args[3])) {
     .max <- seq(as.numeric(.min), as.numeric(.max), by = 10)
-    .base <- sprintf("https://scholar.google.com/scholar?start=%d&hl=en&as_vis=1&as_sdt=0%%2C47&q=%s&btnG=", .max, .search)
+    .base <- sprintf("https://scholar.google.com/scholar?start=%d&hl=en&as_vis=1&as_sdt=0,47&q=%s&btnG=", .max, .search)
   } else if (!.args[1] & .args[2] & !.args[3]) {
     .max <- seq(0, as.numeric(.max), by = 10)
-    .base <- sprintf("https://scholar.google.com/scholar?start=%d&hl=en&as_vis=1&as_sdt=0%%2C47&q=%s&btnG=", .max, .search)
+    .base <- sprintf("https://scholar.google.com/scholar?start=%d&hl=en&as_vis=1&as_sdt=00,47&q=%s&btnG=", .max, .search)
   } else if (!.args[1] & !.args[2] & .args[3]) {
     .max <- seq(as.numeric(.min), as.numeric(.min) + 250, by = 10)
-    .base <- sprintf("https://scholar.google.com/scholar?start=%d&hl=en&as_vis=1&as_sdt=0%%2C47&q=%s&btnG=", .max, .search)
+    .base <- sprintf("https://scholar.google.com/scholar?start=%d&hl=en&as_vis=1&as_sdt=0,47&q=%s&btnG=", .max, .search)
   } else if (.args[1] & .args[2] & !.args[3]) {
     .max <- seq(0, as.numeric(.max), by = 10)
     if(length(.year)==2L) {
-      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&as_yhi=%s&q=%s&btnG=", .max, .year[1], .year[2], .search)
+      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=0,47&as_ylo=%s&as_yhi=%s&q=%s&btnG=", .max, .year[1], .year[2], .search)
     } else {
-      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&q=%s&btnG=", .max, .year, .search) 
+      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=0,47&as_ylo=%s&q=%s&btnG=", .max, .year, .search) 
     }
   } else if (.args[1] & !.args[2] & .args[3]) {
     .max <- seq(as.numeric(.min), as.numeric(.min) + 250, by = 10)
     if(length(.year)==2L) {
-      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&as_yhi=%s&q=%s&btnG=", .max, .year[1], .year[2], .search)
+      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=0,47&as_ylo=%s&as_yhi=%s&q=%s&btnG=", .max, .year[1], .year[2], .search)
     } else {
-      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=%%2C47&as_ylo=%s&q=%s&btnG=", .max, .year, .search) 
+      .base <- sprintf("https://scholar.google.com/scholar?start=%dhl=en&as_vis=1?&as_sdt=0,47&as_ylo=%s&q=%s&btnG=", .max, .year, .search) 
     }
   } else {
     .max <- seq(0, 250, by = 10)
-    .base <- sprintf("https://scholar.google.com/scholar?start=%d&hl=en&as_vis=1&as_sdt=0%%2C47&q=%s&btnG=", .max, .search)
+    .base <- sprintf("https://scholar.google.com/scholar?start=%d&hl=en&as_vis=1&as_sdt=0,47&q=%s&btnG=", .max, .search)
   }
   return(.base)
 }
