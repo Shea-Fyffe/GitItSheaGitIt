@@ -6,16 +6,18 @@ get_spss <- function(dir = getwd(), var.pattern = NULL){
   if(!dir.exists(dir)){
     stop("Please specify correct directory")
   }
-  .files <- list.files(dir, pattern = ".sav")
-  if(!length(.files)) {
+  .file_paths <- list.files(dir, pattern = ".sav")
+  if(!length(.file_paths)) {
     stop(sprintf("No .sav files found in %s", dir))
   }
-  .files <- lapply(.files, haven::read_sav)
+  .files <- lapply(.file_paths, haven::read_sav)
   .files  <- lapply(.files, haven::zap_formats)
   .files <- lapply(.files, haven::zap_labels)
+  .files <- lapply(.files, function(X) as.data.frame(X, stringsAsFactors = FALSE))
   if(!is.null(var.pattern)) {
       .files <- lapply(.files, function(X) get_vars(X, var.pattern))
   }
+  names(.files) <- basename(.file_paths)
   return(.files)
 }
 
