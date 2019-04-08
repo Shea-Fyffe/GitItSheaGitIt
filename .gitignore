@@ -1,4 +1,27 @@
-.Rproj.user
+# History files
 .Rhistory
+.Rapp.history
+
+# Session Data files
 .RData
+
+# User-specific files
 .Ruserdata
+
+# Output files from R CMD build
+/*.tar.gz
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+
+# other garbage
+*.csv
+*.txt
+*.xlsx
+*.jpeg
+*.html
+*.pdf
+.Rproj.user
