@@ -15,7 +15,7 @@ scrape_scholar <- function(...) {
   if(any(sapply(.tmp, function(x) grepl("^https://", x)))) {
     .url <- .tmp
   } else {
-  .url <- build_search(...)
+    .url <- build_search(...)
   }
   .out <- list()
     for(i in seq(length(.url))) {
@@ -35,7 +35,7 @@ scrape_scholar <- function(...) {
             .n <- seq(.n + 1L, .n + .nn)
             .out[[i]]$Article_Number <- .n
             }
-        .wait <- sample(5:10, 1) * (1 / (10 / length(.out)))
+        .wait <- sample(1:10, 1) * (1 / (10 / length(.out)))
         Sys.sleep(.wait)
       }
     }
@@ -138,7 +138,7 @@ scrape <- function(url, user_agent = NULL, verbose = FALSE){
   }
   #set a random user_agent and a timeout
   httr::set_config(httr::user_agent(user_agent), override = TRUE)
-  httr::set_config(httr::timeout(5L))
+  httr::set_config(httr::timeout(2L))
   
   my_page <- tryCatch(xml2::read_html(x = url), error = function(err) {stop(print(err))})
     
