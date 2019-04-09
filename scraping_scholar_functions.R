@@ -131,10 +131,11 @@ scrape <- function(url, user_agent = NULL, verbose = FALSE){
   if(is.null(user_agent)){
     user_agent <- sample(use_age(), 1)
   }
+  #set a random user_agent and a timeout
+  httr::set_config(httr::user_agent(user_agent), override = TRUE)
+  httr::set_config(httr::timeout(5L))
   
-  httr::set_config(httr::user_agent(user_agent))
-
-  my_page <- tryCatch(xml2::read_html(x = url), error = function(err) {stop(err)})
+  my_page <- tryCatch(xml2::read_html(x = url), error = function(err) {stop(print(err))})
     
   if(verbose){
       return(xml2::html_structure(my_page))
