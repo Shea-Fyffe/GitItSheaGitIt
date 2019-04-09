@@ -11,29 +11,34 @@
 #'                    res <- scrape_scholar("Job satistfaction", year = 2010, max = 200)}
 #'@export
 scrape_scholar <- function(...) {
+  .tmp <- paste(c(...))
+  if(any(sapply(.tmp, function(x) grepl("^https://", x)))) {
+    .url <- .tmp
+  } else {
   .url <- build_search(...)
-  .out <- list()
-  for(i in seq(length(.url))) {
-    .out[[i]] <- try(scrape(.url[i]))
-    if((inherits(.out[[i]], "try-error") || is.na(.out[[i]])) & i > 1) {
-      .i <- i - 1L
-      return(.out[seq(.i)])
-    } else if ((inherits(.out[[i]], "try-error") || is.na(.out[[i]])) & i == 1) {
-      stop(sprintf("open:%s and check for CAPTCHA and/or mispellings", .url[i]))
-    } else {
-      .n <- sub('.*?start=(\\d+)&hl.*', '\\1', .url[i])
-      .nn <- nrow(.out[[i]])
-          if(is.na(.n)) {
-            .n <- .nn *(i - 1L) 
-          } else {
-          .n <- as.numeric(.n)
-          .n <- seq(.n + 1L, .n + .nn)
-          .out[[i]]$Article_Number <- .n
-          }
-      .wait <- sample(5:10, 1) * (1 / (10 / length(.out)))
-      Sys.sleep(.wait)
-    }
   }
+  .out <- list()
+    for(i in seq(length(.url))) {
+      .out[[i]] <- try(scrape(.url[i]))
+      if((inherits(.out[[i]], "try-error") || is.na(.out[[i]])) & i > 1) {
+        .i <- i - 1L
+        return(.out[seq(.i)])
+      } else if ((inherits(.out[[i]], "try-error") || is.na(.out[[i]])) & i == 1) {
+        stop(sprintf("open:%s and check for CAPTCHA and/or mispellings", .url[i]))
+      } else {
+        .n <- sub('.*?start=(\\d+)&hl.*', '\\1', .url[i])
+        .nn <- nrow(.out[[i]])
+            if(is.na(.n)) {
+              .n <- .nn *(i - 1L) 
+            } else {
+            .n <- as.numeric(.n)
+            .n <- seq(.n + 1L, .n + .nn)
+            .out[[i]]$Article_Number <- .n
+            }
+        .wait <- sample(5:10, 1) * (1 / (10 / length(.out)))
+        Sys.sleep(.wait)
+      }
+    }
   return(.out)
 }
 #' @Title Build Search
