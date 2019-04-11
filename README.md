@@ -1,7 +1,7 @@
 # Get It Shea Get It
-====
 
-###Overview
+
+## Overview
 Personal Projects related to Psychometrics, Data Science, and Statistics. Functions may be useful for academics or applied researchers.
 
 ## Topics
