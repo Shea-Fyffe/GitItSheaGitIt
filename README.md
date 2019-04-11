@@ -19,6 +19,6 @@ Personal Projects related to Psychometrics, Data Science, and Statistics. Functi
 
 [SPSS 'versus' R](https://drive.google.com/file/d/0B_eHxiBl_mO0NFlQS0RnMHhqYXFPWWo5SkZ2WUU4aUIxQnVr/view?usp=sharing)
 
-####Note
+#### Note
 
 *Some functions are obsolete but will be functional and extensable when I find the time and sanity.*
