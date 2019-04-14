@@ -65,3 +65,16 @@ stat.stratifiedsample <- function(x, size = 2500, ...) {
     out
   }
 }
+
+
+
+#' @title Stratified Sample helper optimized allocation
+#' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
+#' @description Creates desired distribution of sample sizes based on vec(e.g., Item Difficulty)
+neyman_allocation <- function(N, df, vec, strata) {
+  .num <- tapply(df[,vec], strata, function(x) {x <- length(x) * sd(x); x})
+  .num[is.na(.num)] <- 0
+  nh <- N * (.num / sum(.num))
+  nh <- nh[order(nh, decreasing = TRUE)]
+  return(nh)
+}
