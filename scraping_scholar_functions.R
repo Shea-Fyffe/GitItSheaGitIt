@@ -35,7 +35,7 @@ scrape_scholar <- function(...) {
             .n <- seq(.n + 1L, .n + .nn)
             .out[[i]]$Article_Number <- .n
             }
-        .wait <- sample(1:10, 1) * (1 / (10 / length(.out)))
+        .wait <- sample(1:5, 1) * (1 / (10 / length(.out)))
         Sys.sleep(.wait)
       }
     }
