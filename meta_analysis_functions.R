@@ -18,31 +18,32 @@
 #'            
 #' @import pdftools readr
 #' @export
-get_pdf_text<- function(.dir = getwd(), ...){
-  Rpdf <- function(.x){
-    .x <- pdftools::pdf_text(.x)
-    .x <- readr::read_lines(.x)
-    return(.x)
+get_pdf_text<- function(.dir = getwd(), clean = TRUE, ...) {
+  .paths <- tryCatch(list.files(.dir, pattern = "\\.pdf$"),
+                     error = function(err) {NA})
+  if(!length(.paths)||is.na(.paths)) {
+    stop(sprintf("No valid PDF files found in %s", dir))
   }
-  Trim <- function(.x) {
-    if(missing(.x)||!is.character(.x)) stop("Please define x as a character vector")
-    .x <- gsub("\\s{2,}", " ", .x)
-    .x <- gsub("^\\s+|\\s+$", "", .x)
-    return(.x)
-  }
-  .pdfs <- list.files(.dir, pattern = ".pdf$")
   .fuzzy <- list(...)
   if(!!length(.fuzzy)){
     .fuzzy <- paste(.fuzzy, collapse = "|")
-    if(any(grepl(.fuzzy, x = .pdfs, ignore.case = TRUE))) {
-      .pdfs <- pdfs[grepl(.fuzzy, x = .pdfs, ignore.case = TRUE)]
-    } else {
-      .pdfs <- .pdfs
+    if(any(grepl(.fuzzy, x = .paths, ignore.case = TRUE))) {
+      .paths <- .paths[grepl(.fuzzy, x = .paths, ignore.case = TRUE)]
     }
   }
-  .res <- lapply(.pdfs, Rpdf)
-  .res <- lapply(.res, Trim)
-  return(.res)
+    .pdfs <- lapply(.paths, pdftools::pdf_text)
+    if(clean) {
+      .pdfs <- lapply(.pdfs, clean_pdf)
+    }
+    return(.pdfs) 
+}
+clean_pdf <- function(x) {
+  x <- gsub("[[:punct:]]", "", x)
+  # remove extra white spaces
+  x <- gsub("[ \t]{2,}", " ", x)
+  x <- gsub("[\r\n]", "", x)
+  x <- gsub("^\\s+|\\s+$", "", x)
+  return(x)
 }
 
 #' @title Identify synonyms using wordnet
@@ -69,3 +70,7 @@ synonym_match <- function(x, POS = "ADJECTIVE", dictionary = "C:\\Program Files 
   }
   .syn
 }
+
+
+
+
