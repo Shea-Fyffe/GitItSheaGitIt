@@ -16,7 +16,7 @@
 #'
 #' @examples \examples{
 #' #create SQL query
-#' sql <- sprintf("SELECT * FROM CRM_Custom.dbo.vwRegistrantPopulation")
+#' sql <- sprintf("SELECT * FROM Table_A")
 #' #Run SQL query to get data from database
 #  res <- DBI::dbGetQuery(con = con, sql)
 #' #define strata
