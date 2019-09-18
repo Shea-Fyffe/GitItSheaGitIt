@@ -82,11 +82,13 @@ scrape <- function(url,
       }
     )
   .cap <- rvest::html_text(rvest::html_nodes(xml2::xml_child(my_page, 2), 'script')[1])
+  if (length(.cap) != 0L) {
   if (grepl("gs_captcha_cb()", .cap)) {
     stop(
       "Oh no! Google thinks you're a robot...
          Take a break, go make human friends, and try again later."
     )
+    }
   }
   if (verbose) {
     return(xml2::html_structure(my_page))
