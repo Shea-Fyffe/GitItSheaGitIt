@@ -5,13 +5,13 @@
 Personal Projects related to Psychometrics, Data Science, and Statistics. Functions may be useful for academics or applied researchers.
 
 ## Topics
-1. Web Scraping (e.g., [Google Scholar](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/scraping_scholar_functions.R))
+1. Web Scraping (e.g., [Google Scholar](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/scraping_scholar_functions.R))
 
-1. Qualitative Analyses (e.g., [Topic Modeling](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/topic_models_example.R) & [`fuzzy_match()`](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/grad_cafe_functions.R))
+1. Qualitative Analyses (e.g., [Topic Modeling](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/examples/topic_models_example.R) & [`fuzzy_match()`](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/grad_cafe_functions.R))
 
-1. Quantitative Analyses (e.g., [Confirmatory Factor Analysis & Factorial Invariance](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/measurement_invariance_functions.R))
+1. Quantitative Analyses (e.g., [Confirmatory Factor Analysis & Factorial Invariance](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/measurement_invariance_functions.R))
 
-1. Data-management tools (e.g., [capturing arguments, stripping whitespace, recoding SPSS variables](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/utility_functions.R))
+1. Data-management tools (e.g., [capturing arguments, stripping whitespace, recoding SPSS variables](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/utility_functions.R))
 
 ## Contact
 * [Send Email](shea.fyffe@gmail.com)
