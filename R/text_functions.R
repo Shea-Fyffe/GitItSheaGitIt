@@ -80,33 +80,30 @@ synonym_match <-
 #' @import tm textstem
 #' @export
 count_words <- function(x, y, stopwords = TRUE, stem = FALSE) {
-  if (typeof(x) != "character" || typeof(y) != "character") {
-    stop("Please define x and y as a character")
-  }
+  stopifnot(is.character(x), is.character(y))
   if (stopwords) {
-    sw <- paste(tm::stopwords("en"), collapse = "\\b|\\b")
-    sw <- paste0("\\b", sw, "\\b")
-    x <- gsub(sw, " ", x)
-    y <- gsub(sw, " ", y)
-  }
-  if (stem) {
-    x <- textstem::stem_words(x, "en")
-    y <- textstem::stem_words(y, "en")
-  }
-  id_x <- paste("X", seq_along(x), sep = "")
-  id_y <- paste("Y", seq_along(y), sep = "")
-  l <- sapply(list(x, y), clean_text)
-  l <- sapply(l, function(x)
-    strsplit(x, split = " "))
-  ll <- lapply(l[[1]], function(x)
-    sapply(l[[2]], function(y) length(intersect(x, y)), simplify = T)
-  )
-  # res <- as.data.frame(res)
-  # names(res) <- unique(x)
-  # res[, "doc_y"] <- unique(y)
-  # res <- tidyr::gather_(res, "doc_x", "common_word_count",
-  #                       names(res)[names(res) != "doc_y"], na.rm = T)
-  return(ll)
+      sw <- paste(tm::stopwords("en"), collapse = "\\b|\\b")
+      sw <- paste0("\\b", sw, "\\b")
+      .x <- gsub(sw, " ", x)
+      .y <- gsub(sw, " ", y)
+    }
+    if (stem) {
+      x <- textstem::stem_words(x, "en")
+    }
+    l <- sapply(list(unique(.x), unique(.y)), clean_text)
+    l <- sapply(l, function(x) strsplit(x, split = " "))
+    res <- sapply(l[[1]], function(x) {
+      res <- sapply(l[[2]], function(y) {
+        n <- .count_words(x, y)
+        n
+      })
+    })
+    res <- as.data.frame(res)
+    names(res) <- unique(x)
+    res[, "doc_y"] <- unique(y)
+    res <- tidyr::gather_(res, "doc_x", "common_word_count", 
+                          names(res)[names(res) != "doc_y"], na.rm = T)
+    return(res)
 }
 #' @title Wrap Text Function
 #' @export
