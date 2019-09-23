@@ -11,20 +11,28 @@
 #'  given by Google (e.g., usually a string of digits), define this as a character.
 #' @details \code{max = } will default to 250 if note explicitly defined.
 #'  \code{article = } will use search terms within the article defined.
-#' @examples \dontrun{
-#'                    ## Searches for 'Engagement' AND 'organizational behavior' and limits return to 250
-#'                    res <- build_search("Engagement", "organizational behavior", max = 250)}
-#'           \dontrun{
-#'                    ## Searches for articles newer that 2010 with the words 'Job satistfaction' and limits return to 200 starts at 100
-#'                    res <- build_search("Job satisfaction", year = 2010, min = 100, max = 200)}
-#'           \dontrun{
-#'                    ## Searches for articles newer that 2010 but earlier than 2015 with the words 'Job satistfaction' and limits return to 200 starts at 100
-#'                    res <- build_search("Job satisfaction", year = c(2010,2015), min = 100, max = 200)}
-#'           \dontrun{
-#'                    ## Searches for articles WITHIN article 10572144307387769361 newer that 2010 but earlier than 2015 with the words 'Job satistfaction'
-#'                    ## and limits return to 200 starts at 100
-#'                    res <- build_search("Job satisfaction", article = "10572144307387769361", year = c(2010,2015), min = 100, max = 200)}
-#'@export
+#' @examples
+#' \dontrun{
+#' ## Searches for 'Engagement' AND 'organizational behavior' and limits return to 250
+#' res <- build_search("Engagement", "organizational behavior", max = 250)
+#' }
+#'
+#' \dontrun{
+#' ## Searches for articles newer that 2010 with the words 'Job satistfaction' and limits return to 200 starts at 100
+#' res <- build_search("Job satisfaction", year = 2010, min = 100, max = 200)
+#' }
+#'
+#' \dontrun{
+#' ## Searches for articles newer that 2010 but earlier than 2015 with the words 'Job satistfaction' and limits return to 200 starts at 100
+#' res <- build_search("Job satisfaction", year = c(2010, 2015), min = 100, max = 200)
+#' }
+#'
+#' \dontrun{
+#' ## Searches for articles WITHIN article 10572144307387769361 newer that 2010 but earlier than 2015 with the words 'Job satistfaction'
+#' ## and limits return to 200 starts at 100
+#' res <- build_search("Job satisfaction", article = "10572144307387769361", year = c(2010, 2015), min = 100, max = 200)
+#' }
+#' @export
 scrape_scholar <- function(...) {
   .tmp <- paste(c(...))
   if (any(sapply(.tmp, function(x)
@@ -37,16 +45,21 @@ scrape_scholar <- function(...) {
   for (i in seq_along(.url)) {
     .out[[i]] <- try(scrape(.url[i]))
     if ((inherits(.out[[i]], "try-error") ||
-         is.na(.out[[i]])) & i > 1) {
+      is.na(.out[[i]])) & i > 1) {
       .i <- i - 1L
       return(.out[seq(.i)])
     } else if ((inherits(.out[[i]], "try-error") ||
-                is.na(.out[[i]])) & i == 1) {
-      stop(sprintf("ERROR: %s
-                   open:%s and check for CAPTCHA and/or mispellings", .out[[i]],
-                   .url[i]))
+      is.na(.out[[i]])) & i == 1) {
+      stop(
+        sprintf(
+          "ERROR: %s
+                   open:%s and check for CAPTCHA and/or mispellings",
+          .out[[i]],
+          .url[i]
+        )
+      )
     } else {
-      .n <- sub('.*?start=(\\d+)&.*', '\\1', .url[i])
+      .n <- sub(".*?start=(\d+)&.*", "\1", .url[i])
       .nn <- nrow(.out[[i]])
       if (is.na(.n)) {
         .n <- .nn * (i - 1L)
@@ -72,16 +85,18 @@ scrape <- function(url,
   }
   mproxy <- .get_proxy()
   .mpr <- sample(seq(nrow(mproxy)), 1L)
-  #set a random user_agent and a timeout
+  # set a random user_agent and a timeout
   .cfg <- list(
     httr::user_agent(user_agent),
     httr::timeout(3L),
-    httr::use_proxy(url = mproxy[.mpr, 1],
-                    port = mproxy[.mpr, 2])
+    httr::use_proxy(
+      url = mproxy[.mpr, 1],
+      port = mproxy[.mpr, 2]
+    )
   )
-  
+
   t0 <- Sys.time()
-  
+
   my_page <-
     tryCatch(
       xml2::read_html(httr::content(httr::GET(url, .cfg), as = "text")),
@@ -89,11 +104,11 @@ scrape <- function(url,
         stop(print(err))
       }
     )
-  
+
   t1 <- Sys.time()
-  
+
   .cap <-
-    rvest::html_text(rvest::html_nodes(xml2::xml_child(my_page, 2), 'script')[1])
+    rvest::html_text(rvest::html_nodes(xml2::xml_child(my_page, 2), "script")[1])
   if (length(.cap) != 0L) {
     if (grepl("gs_captcha_cb()", .cap)) {
       stop(
@@ -110,9 +125,9 @@ scrape <- function(url,
   } else {
     .out <- parse_page(my_page)
   }
-  
+
   .pause(as.numeric(t1 - t0))
-  
+
   on.exit(closeAllConnections())
   return(.out)
 }
@@ -128,24 +143,32 @@ scrape <- function(url,
 #'  given by Google (e.g., usually a string of digits), define this as a character.
 #' @details \code{max = } will default to 250 if note explicitly defined.
 #'  \code{article = } will use search terms within the article defined.
-#' @examples \dontrun{
-#'                    ## Searches for 'Engagement' AND 'organizational behavior' and limits return to 250
-#'                    res <- build_search("Engagement", "organizational behavior", max = 250)}
-#'           \dontrun{
-#'                    ## Searches for articles newer that 2010 with the words 'Job satistfaction' and limits return to 200 starts at 100
-#'                    res <- build_search("Job satisfaction", year = 2010, min = 100, max = 200)}
-#'           \dontrun{
-#'                    ## Searches for articles newer that 2010 but earlier than 2015 with the words 'Job satistfaction' and limits return to 200 starts at 100
-#'                    res <- build_search("Job satisfaction", year = c(2010,2015), min = 100, max = 200)}
-#'           \dontrun{
-#'                    ## Searches for articles WITHIN article 10572144307387769361 newer that 2010 but earlier than 2015 with the words 'Job satistfaction'
-#'                    ## and limits return to 200 starts at 100
-#'                    res <- build_search("Job satisfaction", article = "10572144307387769361", year = c(2010,2015), min = 100, max = 200)}
-#'@seealso \code{scrape_scholar}
-#'@export
+#' @examples
+#' \dontrun{
+#' ## Searches for 'Engagement' AND 'organizational behavior' and limits return to 250
+#' res <- build_search("Engagement", "organizational behavior", max = 250)
+#' }
+#'
+#' \dontrun{
+#' ## Searches for articles newer that 2010 with the words 'Job satistfaction' and limits return to 200 starts at 100
+#' res <- build_search("Job satisfaction", year = 2010, min = 100, max = 200)
+#' }
+#'
+#' \dontrun{
+#' ## Searches for articles newer that 2010 but earlier than 2015 with the words 'Job satistfaction' and limits return to 200 starts at 100
+#' res <- build_search("Job satisfaction", year = c(2010, 2015), min = 100, max = 200)
+#' }
+#'
+#' \dontrun{
+#' ## Searches for articles WITHIN article 10572144307387769361 newer that 2010 but earlier than 2015 with the words 'Job satistfaction'
+#' ## and limits return to 200 starts at 100
+#' res <- build_search("Job satisfaction", article = "10572144307387769361", year = c(2010, 2015), min = 100, max = 200)
+#' }
+#' @seealso \code{scrape_scholar}
+#' @export
 build_search <- function(...) {
   .search <- list(...)
-  
+
   if ("year" %in% names(.search)) {
     .year <- .search[["year"]]
     .search[["year"]] <- NULL
@@ -168,35 +191,37 @@ build_search <- function(...) {
     .cites <- .search[["article"]]
     .search[["article"]] <- NULL
   }
-  
+
   if (exists(".cites")) {
     .base <- .get_base(.cites)
   }
   else {
     .base <- .get_base(NULL)
   }
-  
-  
+
+
   .args <- c(exists(".year"), exists(".max"), exists(".min"))
-  
+
   if (is.recursive(.search)) {
     .search <- sapply(unlist(.search), utils::URLencode)
   }
   else {
     .search <- sapply(.search, utils::URLencode)
   }
-  
+
   .search <- paste(.search, collapse = "+")
-  
+
   if (all(.args)) {
     .max <- seq(as.numeric(.min), as.numeric(.max), by = 10)
     if (length(.year) == 2L) {
       .add <-
-        sprintf("start=%d&as_ylo=%s&as_yhi=%s&q=%s&btnG=",
-                .max,
-                .year[1],
-                .year[2],
-                .search)
+        sprintf(
+          "start=%d&as_ylo=%s&as_yhi=%s&q=%s&btnG=",
+          .max,
+          .year[1],
+          .year[2],
+          .search
+        )
     } else {
       .add <-
         sprintf("start=%d&as_ylo=%s&q=%s&btnG=", .max, .year, .search)
@@ -205,11 +230,13 @@ build_search <- function(...) {
     .max <- seq(0, 250, by = 10)
     if (length(.year) == 2L) {
       .add <-
-        sprintf("start=%d&as_ylo=%s&as_yhi=%s&q=%s&btnG=",
-                .max,
-                .year[1],
-                .year[2],
-                .search)
+        sprintf(
+          "start=%d&as_ylo=%s&as_yhi=%s&q=%s&btnG=",
+          .max,
+          .year[1],
+          .year[2],
+          .search
+        )
     } else {
       .add <-
         sprintf("start=%d&as_ylo=%s&q=%s&btnG=", .max, .year, .search)
@@ -227,11 +254,13 @@ build_search <- function(...) {
     .max <- seq(0, as.numeric(.max), by = 10)
     if (length(.year) == 2L) {
       .add <-
-        sprintf("start=%d&as_ylo=%s&as_yhi=%s&q=%s&btnG=",
-                .max,
-                .year[1],
-                .year[2],
-                .search)
+        sprintf(
+          "start=%d&as_ylo=%s&as_yhi=%s&q=%s&btnG=",
+          .max,
+          .year[1],
+          .year[2],
+          .search
+        )
     } else {
       .add <-
         sprintf("start=%d&as_ylo=%s&q=%s&btnG=", .max, .year, .search)
@@ -240,11 +269,13 @@ build_search <- function(...) {
     .max <- seq(as.numeric(.min), as.numeric(.min) + 250, by = 10)
     if (length(.year) == 2L) {
       .add <-
-        sprintf("start=%d&as_ylo=%s&as_yhi=%s&q=%s&btnG=",
-                .max,
-                .year[1],
-                .year[2],
-                .search)
+        sprintf(
+          "start=%d&as_ylo=%s&as_yhi=%s&q=%s&btnG=",
+          .max,
+          .year[1],
+          .year[2],
+          .search
+        )
     } else {
       .add <-
         sprintf(
@@ -258,15 +289,15 @@ build_search <- function(...) {
     .max <- seq(0, 250, by = 10)
     .add <- sprintf("start=%d&q=%s&btnG=", .max, .search)
   }
-  
+
   .base <- paste0(.base, .add)
-  
+
   return(.base)
 }
 #' @title Paginate Website Table
 #' @details just a helper to get the number of pages from a search
 n_pages <- function(html_page) {
-  .pages <- rvest::html_nodes(html_page, '.gs_ab_mdw')
+  .pages <- rvest::html_nodes(html_page, ".gs_ab_mdw")
   .pages <- rvest::html_text(.pages)[2]
   .pages <-
     gsub(",", "", sub("About (.*?) results.*", "\\1", .pages))
@@ -317,16 +348,17 @@ parse_page <- function(.html) {
     return(NA)
   } else {
     .html <- .parsing_helper(.html)
-  if(nrow(.html) > 1L)
+    if (nrow(.html) > 1L) {
+      .html <-
+        data.frame(apply(.html, 2, function(x)
+          parsing_helper(x)),
+        stringsAsFactors = FALSE
+        )
+    } else {
+      .html <- sapply(.html, parsing_helper)
+    }
     .html <-
-      data.frame(apply(.html, 2, function(x)
-        parsing_helper(x)),
-        stringsAsFactors = FALSE)
-  } else {
-    .html <- sapply(.html, parsing_helper)
-  }
-  .html <-
-    .html[c("Title", "Author", "Journal", "Year", "Link", "Abstract")]
+      .html[c("Title", "Author", "Journal", "Year", "Link", "Abstract")]
     return(.html)
   }
 }
@@ -398,31 +430,31 @@ parsing_helper <- function(.vec) {
 .use_age <- function() {
   .out <-
     c(
-      #Chrome
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 5.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-      #Firefox
-      'Mozilla/4.0 (compatible; MSIE 9.0; Windows NT 6.1)',
-      'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-      'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)',
-      'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko',
-      'Mozilla/5.0 (Windows NT 6.2; WOW64; Trident/7.0; rv:11.0) like Gecko',
-      'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
-      'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.0; Trident/5.0)',
-      'Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko',
-      'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
-      'Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko',
-      'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)',
-      'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)',
-      'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)'
+      # Chrome
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 5.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36",
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
+      # Firefox
+      "Mozilla/4.0 (compatible; MSIE 9.0; Windows NT 6.1)",
+      "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko",
+      "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)",
+      "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko",
+      "Mozilla/5.0 (Windows NT 6.2; WOW64; Trident/7.0; rv:11.0) like Gecko",
+      "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko",
+      "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.0; Trident/5.0)",
+      "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko",
+      "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
+      "Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko",
+      "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)",
+      "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)",
+      "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)"
     )
   return(.out)
 }
@@ -433,9 +465,9 @@ parsing_helper <- function(.vec) {
   .wait <- sample(seq(1, 2, .25), 1) * (1 / (1 / 2.5))
   .wait <- 2 * (.wait * x)
   message(sprintf("waiting for %.3f seconds...to prevent being blocked", .wait))
-  
-  Sys.sleep(.wait) #pause to let connection work
-  
+
+  Sys.sleep(.wait) # pause to let connection work
+
   closeAllConnections()
   gc()
 }
@@ -474,8 +506,8 @@ parsing_helper <- function(.vec) {
         }
       )
     .proxy <- rvest::html_table(my_page)[[1L]]
-    .proxy <- .proxy[.proxy[, 7] == "yes",]
-    if (nrow(.proxy[.proxy[, 3] == "US",]) > 1) {
+    .proxy <- .proxy[.proxy[, 7] == "yes", ]
+    if (nrow(.proxy[.proxy[, 3] == "US", ]) > 1) {
       .proxy <- .proxy[.proxy[, 3] == "US", c(1, 2)]
     } else {
       .proxy <- .proxy[, c(1, 2)]
