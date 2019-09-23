@@ -42,7 +42,9 @@ scrape_scholar <- function(...) {
       return(.out[seq(.i)])
     } else if ((inherits(.out[[i]], "try-error") ||
                 is.na(.out[[i]])) & i == 1) {
-      stop(sprintf("open:%s and check for CAPTCHA and/or mispellings", .url[i]))
+      stop(sprintf("ERROR: %s
+                   open:%s and check for CAPTCHA and/or mispellings", .out[[i]],
+                   .url[i]))
     } else {
       .n <- sub('.*?start=(\\d+)&.*', '\\1', .url[i])
       .nn <- nrow(.out[[i]])
@@ -315,13 +317,16 @@ parse_page <- function(.html) {
     return(NA)
   } else {
     .html <- .parsing_helper(.html)
+  if(nrow(.html) > 1L)
     .html <-
       data.frame(apply(.html, 2, function(x)
         parsing_helper(x)),
         stringsAsFactors = FALSE)
-    
-    .html <-
-      .html[c("Title", "Author", "Journal", "Year", "Link", "Abstract")]
+  } else {
+    .html <- sapply(.html, parsing_helper)
+  }
+  .html <-
+    .html[c("Title", "Author", "Journal", "Year", "Link", "Abstract")]
     return(.html)
   }
 }
