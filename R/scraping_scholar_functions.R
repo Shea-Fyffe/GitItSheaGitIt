@@ -59,7 +59,7 @@ scrape_scholar <- function(...) {
         )
       )
     } else {
-      .n <- sub(".*?start=(\\d+)&.*", "\1", .url[i])
+      .n <- sub(".*?start=(\\d+)&.*", "\\1", .url[i])
       .nn <- nrow(.out[[i]])
       if (is.na(.n)) {
         .n <- .nn * (i - 1L)
