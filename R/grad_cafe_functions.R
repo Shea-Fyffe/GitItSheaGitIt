@@ -1,8 +1,10 @@
+### My first ever Project
+### I've come so far
 ###Functions used to produce Grad Cafe analytics###
 ###for questions please email Shea Fyffe
 ###this script should be sourced into the "Mining_Grad_Cafe.r" script by passing the correct directory of this file as the "function_dir" object
 
-
+#' @\donotrun{
 ###Function that finds maximum page number given search string and number of cases per page
 get_pages <- function(p_url, n_page) { 
   
@@ -373,3 +375,4 @@ plot_stats<- function (df , x , y, z, title){
     theme(panel.grid.major = element_line(size = 0.5, color = "gray92"), legend.title = element_blank(), 
       plot.title = element_text(face="bold", size=20, hjust=0),
       axis.line = element_line(size = 0.4, color = "black"), axis.text.y = element_text(size = 9), axis.text.x = element_text(size = 8, hjust = 0.5, face = "bold"))}
+                     }
