@@ -30,7 +30,7 @@ get_spss <- function(dir = getwd(),
 }
 
 
-#' @title Get and Convert SPSS files to R
+#' @title Recode variable values
 #' @author Shea Fyffe email: shea.fyffe@@gmail.com
 #' @param x Required. Data.frame containing variables to recode
 #' @param vars Required. Vector of class character of variable names. May use [GitItSheaGitIt::get_vars()]
