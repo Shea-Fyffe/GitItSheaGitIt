@@ -292,3 +292,21 @@ download_code <- function(git_file) {
   close(con)
   source(tmp)
 }
+#' @title Find Common value indicies
+#' @param x an atomic vector of values
+#' @param val a value to find (Default is NULL)
+#' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
+#' @family Utilities
+#' @export
+find_runs <- function(x, val = NULL) {
+  stopifnot({
+    is.atomic(x)
+  })
+  .ri <- x[-1L] == x[-length(x)]
+  .ri <- c(which(.ri), length(x))
+  if (!is.null(val)) {
+    .vi <- which(x == val)
+    .ri <- intersect(.ri,.vi)
+  }
+  return(.ri)
+}
