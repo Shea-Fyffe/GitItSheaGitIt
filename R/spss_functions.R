@@ -53,6 +53,7 @@ recode_variables <-
     if (!all(.temp %in% old_values)) {
       stop(
         sprintf("Old values are missing: %s\n", setdiff(.temp, old_values))
+      )
     }
     if (length(vars) > 1) {
       x[, vars] <-
