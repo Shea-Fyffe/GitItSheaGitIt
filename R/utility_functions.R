@@ -171,7 +171,7 @@ fuzzy.match <- function(x,
 #'
 #' @family Utilities
 #' @export
-save.xlsx <- function (file = getwd(), ...) {
+save.xlsx <- function(file = getwd(), ...) {
   if (missing(file))
     file <- getwd()
   objects <- list(...)
@@ -309,4 +309,17 @@ find_runs <- function(x, val = NULL) {
     .ri <- intersect(.ri,.vi)
   }
   return(.ri)
+}
+#' @title Find duplicate values
+#' @details Adds to \code{duplicated} by creating boolean return as opposed to count.
+#' @param x an atomic vector of values
+#' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
+#' @family Utilities
+#' @export
+flag_duplicates <- function(x) {
+  if (!is.atomic(x)) {
+    stop("x is not an atomic vector")
+  }
+  .x <- as.numeric(x %in% x[duplicated(x)])
+  return(.x)
 }
