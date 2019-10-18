@@ -1,30 +1,26 @@
 #' @title Convert PDF File to Text
-#'
 #' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
-#'
-#'
 #' @param .dir file directory of pdf(s)
 #' @param ... a character vector to filter out PDF file names
-#'
 #' @examples \example{
 #' \dontrun{
-#'   \code{pdf_text_files <- get_pdf_text(.dir = "%systemdrive%/Documents and Settings/All Users/Desktop", "words in pdf file name")
+#'   \code{pdf_text_files <- get_pdf_text(.dir = '%systemdrive%/Documents and Settings/All Users/Desktop', 'words in pdf file name')
 #'         cat(pdf_text_files)}
 #'         }
 #' \dontrun{
-#'   \code{pdf_text_files <- get_pdf_text(.dir = "%systemdrive%/Documents and Settings/All Users/Desktop", c("Employee", "Engagement"))
+#'   \code{pdf_text_files <- get_pdf_text(.dir = '%systemdrive%/Documents and Settings/All Users/Desktop', c('Employee', 'Engagement'))
 #'         cat(pdf_text_files)}
 #'         }
-#'
 #' @import pdftools readr
 #' @export
 get_pdf_text <- function(.dir = getwd(), clean = TRUE, ...) {
-  .paths <- tryCatch(
-    list.files(.dir, pattern = "\\.pdf$"),
-    error = function(err) {
-      NA
-    }
-  )
+  .paths <-
+    tryCatch(
+      list.files(.dir, pattern = "\\.pdf$"),
+      error = function(err) {
+        NA
+      }
+    )
   if (!length(.paths) || is.na(.paths)) {
     stop(sprintf("No valid PDF files found in %s", dir))
   }
@@ -53,7 +49,7 @@ get_pdf_text <- function(.dir = getwd(), clean = TRUE, ...) {
 synonym_match <-
   function(x,
            POS = "ADJECTIVE",
-           dictionary = "C:\\Program Files (x86)\\WordNet\\2.1\\dict",
+           dictionary = "C:\\Program Files (x86)\\WordNet\\2.1",
            drop = TRUE) {
     .home <- gsub("*\\\\dict", "", dictionary)
     Sys.setenv(WNHOME = .home)
@@ -107,14 +103,14 @@ count_words <- function(x,
   res <- as.data.frame(res)
   names(res) <- l[[1]]
   res[, "doc_y"] <- l[[2]]
-  res <- tidyr::gather_(res, "doc_x", "common_word_count",
-                        names(res)[names(res) != "doc_y"], na.rm = T)
+  res <-
+    tidyr::gather_(res, "doc_x", "common_word_count", names(res)[names(res) != "doc_y"],
+                   na.rm = T)
   return(res)
 }
 #' @title Count words Helper
 #' @export
-.count_words <- function(x, y)
-{
+.count_words <- function(x, y) {
   res <- length(intersect(x, y))
   return(res)
 }
@@ -148,29 +144,52 @@ wrap_text <- function(txt, pattern) {
 #' @param convert_nums Logical. Update numbers to words?
 #' @import qdap
 #' @export
-clean_text <- function(x,
-                       rm_nums = TRUE,
-                       convert_nums = FALSE) {
-  if (typeof(x) != "character") {
-    stop("Please define x as a character")
-  }
-  if (rm_nums) {
-    x <- gsub("[^[:alpha:]\\-\\'\\s]", " ", x)
-  } else {
-    x <- gsub("[^[:alnum:]\\-\\'\\s]", " ", x)
-    if (convert_nums) {
-      if (any(grepl("[0-9]", x))) {
-        x <- qdap::replace_number(x)
-        x <- qdap::replace_ordinal(x)
+clean_text <-
+  function(x,
+           lowercase = TRUE,
+           rm_nums = TRUE,
+           convert_nums = FALSE,
+           rm_punct = TRUE,
+           rm_whitespace = TRUE) {
+    stopifnot({
+      sapply(c(lowercase, rm_nums, convert_nums, rm_punct, rm_whitespace),
+             is.logical)
+    })
+    if (typeof(x) != "character") {
+      stop("Please define x as a character")
+    } else {
+      x <- utf8::utf8_normalize(x, map_quote = T)
+    }
+    
+    
+    if (rm_nums) {
+      x <- gsub("[[:digit:]]", " ", x)
+    } else {
+      if (convert_nums) {
+        if (any(grepl("[[:digit:]]", x))) {
+          x <- qdap::replace_number(x)
+          x <- qdap::replace_ordinal(x)
+        }
       }
     }
+    
+    if (rm_punct) {
+      x <- qdap::replace_contraction(x)
+      x <- gsub("[^[:alnum:]\\s]", " ", x)
+    }
+    
+    if (rm_whitespace) {
+      x <- gsub("\\s+", " ", x)
+      x <- gsub("^\\s+|\\s+$", "", x)
+      x <- x[x != ""]
+    }
+    
+    if (lowercase) {
+      x <- tolower(x)
+    }
+    
+    return(x)
   }
-  x <- gsub("\\s+", " ", x)
-  x <- gsub("^\\s+|\\s+$", "", x)
-  x <- tolower(x)
-  x <- x[x != ""]
-  return(x)
-}
 #' @title Capture text between two characters
 #' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
 #' @param x character vector of words or sentences.
@@ -192,9 +211,9 @@ parse_pdf <- function(pdf_path) {
   x <- tryCatch({
     tabulizer::extract_text(pdf_path, encoding = "UTF-8")
   }, warning = function(w) {
-    print(paste('warning:', w))
+    print(paste("warning:", w))
   }, error = function(e) {
-    print(paste('error:', e))
+    print(paste("error:", e))
   })
   if (any(grepl("\r\n", x))) {
     x <- unlist(strsplit(x, "\r\n"))
@@ -207,7 +226,6 @@ parse_pdf <- function(pdf_path) {
     return(x)
   }
 }
-
 #' @title Find top words in a text document
 #'
 #' @param x Character. A vector of words from a text document.
@@ -215,18 +233,53 @@ parse_pdf <- function(pdf_path) {
 #'
 #' @return
 #' @export
-#'
-#' @examples
 find_top_words <- function(x, ...) {
   if (length(list(...)) != 0L) {
     x <- qdap::freq_terms(text.var = x, ...)
   } else {
-    x <- qdap::freq_terms(
-      text.var = x,
-      20,
-      at.least = 3,
-      stopwords = qdapDictionaries::Top200Words
-    )
+    x <-
+      qdap::freq_terms(
+        text.var = x,
+        20,
+        at.least = 3,
+        stopwords = qdapDictionaries::Top200Words
+      )
+  }
+  return(x)
+}
+#' @title Attempt to calculate number of english words in a string
+#' @param x Character. A vector of words from a text document.
+#' @param ... Additional words to be passed to be checked against
+#' @seealso [qdapDictionaries::GradyAugmented]
+#' @export
+get_english_words_ratio <- function(x, ...) {
+  if (length(list(...)) != 0L) {
+    .dict <- qdapDictionaries::GradyAugmented
+  } else {
+    .dict <- c(qdapDictionaries::GradyAugmented, paste(...))
+  }
+  x <- sum(x %in% .dict) / length(x)
+  if (is.nan(x)) {
+    x <- 1
+  }
+  return(x)
+}
+#' @title Check Spelling
+#' @param x Character. A vector of words from a text document.
+#' @param return_misspell Logical. Return misspelled words? Otherwise will remove.
+#' @seealso [hunspell::suggest]
+#' @export
+check_spelling <- function(x, return_misspell = TRUE) {
+  stopifnot({
+    is.character(x)
+    !any(grepl("\\s+", x))
+    is.logical(return_misspell)
+  })
+  .ms <- hunspell::hunspell_check(x)
+  if (return_misspell) {
+    x <- x[!.ms]
+  } else {
+    x <- x[.ms]
   }
   return(x)
 }
