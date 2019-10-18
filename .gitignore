@@ -17,11 +17,11 @@
 # RStudio files
 .Rproj.user/
 
-# other garbage
+# other misc
 *.csv
 *.txt
 *.xlsx
 *.jpeg
 *.html
 *.pdf
-*.Rproj.user
+*.Rproj

@@ -63,11 +63,12 @@ synonym_match <-
         wordnet::synonyms(word = x, pos = POS))
     .syn <- reshape2::melt(.syn, factorsAsStrings = FALSE)
     names(.syn) <- c("Synonym", "Word")
-    .syn[, 1] <- gsub("*\\([^\\)]+\\)$", "", as.character(.syn[, 1]))
+    .syn[, 1] <-
+      gsub("*\\([^\\)]+\\)$", "", as.character(.syn[, 1]))
     .syn[, "match"] <- ifelse(.syn[, 1] != .syn[, 2], T, F)
-    .syn <- .syn[.syn[, "match"], ]
+    .syn <- .syn[.syn[, "match"],]
     if (drop) {
-      .syn <- .syn[vec_grep(.syn[, 2], .syn[, 1], FALSE), ]
+      .syn <- .syn[vec_grep(.syn[, 2], .syn[, 1], FALSE),]
     }
     .syn
   }
@@ -79,31 +80,43 @@ synonym_match <-
 #' @param stem Logical. Stem words? Uses [textstem::stem_word]
 #' @import tm textstem
 #' @export
-count_words <- function(x, y, stopwords = TRUE, stem = FALSE) {
+count_words <- function(x,
+                        y,
+                        stopwords = TRUE,
+                        stem = FALSE) {
   stopifnot(is.character(x), is.character(y))
   if (stopwords) {
-      sw <- paste(tm::stopwords("en"), collapse = "\\b|\\b")
-      sw <- paste0("\\b", sw, "\\b")
-      .x <- gsub(sw, " ", x)
-      .y <- gsub(sw, " ", y)
-    }
-    if (stem) {
-      x <- textstem::stem_words(x, "en")
-    }
-    l <- sapply(list(unique(.x), unique(.y)), clean_text)
-    l <- sapply(l, function(x) strsplit(x, split = " "))
-    res <- sapply(l[[1]], function(x) {
-      res <- sapply(l[[2]], function(y) {
-        n <- .count_words(x, y)
-        n
-      })
+    sw <- paste(tm::stopwords("en"), collapse = "\\b|\\b")
+    sw <- paste0("\\b", sw, "\\b")
+    x <- gsub(sw, " ", x)
+    x <- gsub(sw, " ", y)
+  }
+  if (stem) {
+    x <- textstem::stem_words(x, "en")
+  }
+  l <- sapply(list(unique(x), unique(y)), clean_text)
+  l <- sapply(l, function(x)
+    strsplit(x, split = " "))
+  res <- sapply(l[[1]], function(x) {
+    res <- sapply(l[[2]], function(y) {
+      n <- .count_words(x, y)
+      n
     })
-    res <- as.data.frame(res)
-    names(res) <- unique(x)
-    res[, "doc_y"] <- unique(y)
-    res <- tidyr::gather_(res, "doc_x", "common_word_count", 
-                          names(res)[names(res) != "doc_y"], na.rm = T)
-    return(res)
+  })
+  
+  res <- as.data.frame(res)
+  names(res) <- l[[1]]
+  res[, "doc_y"] <- l[[2]]
+  res <- tidyr::gather_(res, "doc_x", "common_word_count",
+                        names(res)[names(res) != "doc_y"], na.rm = T)
+  return(res)
+}
+#' @title Count words Helper
+#' @export
+.count_words <- function(x, y)
+{
+  res <- length(intersect(x, y))
+  return(res)
 }
 #' @title Wrap Text Function
 #' @export
@@ -131,34 +144,89 @@ wrap_text <- function(txt, pattern) {
 #' @title Clean text from character vector
 #' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
 #' @param x character vector of words or sentences.
+#' @param rm_nums Logical. Only keep words, hyphens and spaces?
+#' @param convert_nums Logical. Update numbers to words?
 #' @import qdap
 #' @export
-clean_text <- function(x) {
+clean_text <- function(x,
+                       rm_nums = TRUE,
+                       convert_nums = FALSE) {
   if (typeof(x) != "character") {
     stop("Please define x as a character")
   }
-  x <- gsub("[^[:alnum:]\\-\\'\\s\\.]", " ", x)
-  x <- gsub("\\.$", "", x)
-  if (any(grepl("\\.", x))) {
-    message("text contains '.' not at end splitting data")
-    x <- strsplit(x, ".")
-    x <- unlist(x)
+  if (rm_nums) {
+    x <- gsub("[^[:alpha:]\\-\\'\\s]", " ", x)
+  } else {
+    x <- gsub("[^[:alnum:]\\-\\'\\s]", " ", x)
+    if (convert_nums) {
+      if (any(grepl("[0-9]", x))) {
+        x <- qdap::replace_number(x)
+        x <- qdap::replace_ordinal(x)
+      }
+    }
   }
   x <- gsub("\\s+", " ", x)
-  if (any(grepl("[0-9]", x))) {
-    x <- qdap::replace_number(x)
-    x <- qdap::replace_ordinal(x)
-  }
   x <- gsub("^\\s+|\\s+$", "", x)
   x <- tolower(x)
+  x <- x[x != ""]
   return(x)
 }
 #' @title Capture text between two characters
 #' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
 #' @param x character vector of words or sentences.
-#' @param between character vector of length 2 containing boundary characters 
+#' @param between character vector of length 2 containing boundary characters
 extract_text_between <- function(x, between = c(".*", ".*")) {
   .pattern <- sprintf("%s(.*?)%s", between[1], between[2])
   .x <- regmatches(x, regexec(.pattern, x))
   return(.x)
+}
+#' @title Parse PDF article
+#' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
+#' @param pdf_path file path to article as a pdf
+#' @import tabulizer
+#' @export
+parse_pdf <- function(pdf_path) {
+  if (!file.exists(pdf_path)) {
+    stop("File path invalid")
+  }
+  x <- tryCatch({
+    tabulizer::extract_text(pdf_path, encoding = "UTF-8")
+  }, warning = function(w) {
+    print(paste('warning:', w))
+  }, error = function(e) {
+    print(paste('error:', e))
+  })
+  if (any(grepl("\r\n", x))) {
+    x <- unlist(strsplit(x, "\r\n"))
+  }
+  x <- clean_text(x)
+  x <- x[x != ""]
+  if (length(x) == 0L) {
+    return()
+  } else {
+    return(x)
+  }
+}
+
+#' @title Find top words in a text document
+#'
+#' @param x Character. A vector of words from a text document.
+#' @param ... Additional arguments to be passed to [qdap::freq_terms]
+#'
+#' @return
+#' @export
+#'
+#' @examples
+find_top_words <- function(x, ...) {
+  if (length(list(...)) != 0L) {
+    x <- qdap::freq_terms(text.var = x, ...)
+  } else {
+    x <- qdap::freq_terms(
+      text.var = x,
+      20,
+      at.least = 3,
+      stopwords = qdapDictionaries::Top200Words
+    )
+  }
+  return(x)
 }

@@ -11,7 +11,7 @@ Personal Projects related to Psychometrics, Data Science, and Statistics. Functi
 
 1. Quantitative Analyses (e.g., [Confirmatory Factor Analysis & Factorial Invariance](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/measurement_invariance_functions.R))
 
-1. Data-management tools (e.g., [capturing arguments, stripping whitespace, recoding SPSS variables](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/utility_functions.R))
+1. Data-management tools (e.g., [capturing arguments](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/argument_validator_functions.R), [stripping whitespace](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/text_functions.R), [recoding SPSS variables](https://raw.githubusercontent.com/Shea-Fyffe/GitItSheaGitIt/master/R/spss_functions.R))
 
 ## Contact
 * [Send Email](shea.fyffe@gmail.com)
