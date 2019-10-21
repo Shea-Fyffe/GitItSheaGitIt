@@ -374,6 +374,8 @@ parsing_helper <- function(.vec) {
   .df$Abstract <-
     gsub("[^[:alnum:][:blank:]+?&/\\-]", " ", .df$Abstract, perl = TRUE)
   .df$Abstract <- gsub("^Page\\s\\d+.", "", .df$Abstract)
+  .df$Abstract <- gsub("- |^\\s+|\\s+$", "", .df$Abstract)
+  .df$Abstract <- tolower(.df$Abstract)
   .df$Meta <- NULL
   .df <- cbind(.df, .meta)
   return(.df)
