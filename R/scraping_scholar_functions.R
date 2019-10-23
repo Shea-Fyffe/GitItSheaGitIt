@@ -58,18 +58,9 @@ scrape_scholar <- function(...) {
           .url[i]
         )
       )
-    } else {
-      .n <- sub(".*?start=(\\d+)&.*", "\\1", .url[i])
-      .nn <- nrow(.out[[i]])
-      if (is.na(.n)) {
-        .n <- .nn * (i - 1L)
-      } else {
-        .n <- as.numeric(.n)
-        .n <- seq(.n + 1L, .n + .nn)
-        .out[[i]]$Article_Number <- .n
-      }
-    }
+    } 
   }
+  .out <- do.call("rbind", .out)
   return(.out)
 }
 #' @title Scrape Child Function
@@ -198,16 +189,19 @@ build_search <- function(...) {
   else {
     .base <- .get_base(NULL)
   }
-
-
+  
+    
   .args <- c(exists(".year"), exists(".max"), exists(".min"))
 
   if (is.recursive(.search)) {
-    .search <- sapply(unlist(.search), utils::URLencode)
+    .search <- unlist(.search)
   }
-  else {
-    .search <- sapply(.search, utils::URLencode)
+
+  if (nchar(.search) > 255L) {
+    stop("search string too many characters, please shorten")
   }
+  
+  .search <- sapply(.search, utils::URLencode)
 
   .search <- paste(.search, collapse = "+")
 
