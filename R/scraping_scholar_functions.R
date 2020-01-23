@@ -47,7 +47,7 @@ scrape_scholar <- function(...) {
     if ((inherits(.out[[i]], "try-error") ||
       is.na(.out[[i]])) & i > 1) {
       .i <- i - 1L
-      return(.out[seq(.i)])
+      .out <- .out[seq(.i)]
     } else if ((inherits(.out[[i]], "try-error") ||
       is.na(.out[[i]])) & i == 1) {
       stop(
