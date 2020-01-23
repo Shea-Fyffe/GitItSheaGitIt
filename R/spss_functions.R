@@ -55,15 +55,24 @@ recode_variables <- function(x, vars, old_values = NULL, new_values = NULL) {
 }
 
 
-#' @title Sum set of variables
-#' @author Shea Fyffe email: shea.fyffe@@gmail.com
-#' @param x Required. Data.frame containing variables to sum
-#' @param pat Required. Pattern of variable names to select columns. May use Regex.
-#' @param new_col Required. Name of new column to be created.
+#' @title Create Subscale based on Operation
+#' @param x Required. Data.frame containing variables create subscale
+#' @param FUNCT Required. A function to be applied
+#' @param pattern Optional. Pattern of variable names select for subscale
+#'  calculation. May use Regex.
 #' @family SPSS
-sum_subscale <- function(x, pat, new_col) {
-    x[, new_col] <- apply(x[grep(pat, names(x))], 1, function(x) sum(x, na.rm = TRUE))
-    return(x)
+create_subscale <- function(x, FUNCT, pattern = NULL) {
+  if (!inherits(x, "data.frame")) {
+    stop("x must be a data.frame")
+  }  
+  if(!is.null(pattern)) {
+      if(length(pattern) > 1) {
+        pattern <- paste0(pattern, collapse = "|")
+      }
+      x <- x[grep(pattern, names(x))]
+    }
+  x <- apply(x, 1, FUN = FUNCT)
+  return(x)
 }
 #' @title Calculate average of set of variables
 #' @author Shea Fyffe email: shea.fyffe@@gmail.com
