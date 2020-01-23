@@ -190,20 +190,19 @@ build_search <- function(...) {
     .base <- .get_base(NULL)
   }
   
-    
   .args <- c(exists(".year"), exists(".max"), exists(".min"))
 
   if (is.recursive(.search)) {
     .search <- unlist(.search)
   }
-
-  if (nchar(.search) > 255L) {
-    stop("search string too many characters, please shorten")
-  }
   
   .search <- sapply(.search, utils::URLencode)
 
   .search <- paste(.search, collapse = "+")
+  
+  if (nchar(.search) > 255L) {
+    stop("search string too many characters, please shorten")
+  }
 
   if (all(.args)) {
     .max <- seq(as.numeric(.min), as.numeric(.max), by = 10)
