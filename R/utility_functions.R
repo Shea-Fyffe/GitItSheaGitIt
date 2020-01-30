@@ -263,3 +263,26 @@ flag_duplicates <- function(x) {
     .x <- as.numeric(x %in% x[duplicated(x)])
     return(.x)
 }
+#' @title Randomize Group Selection
+#' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
+#' @details Return vector of group assignment
+#' @param n Required. Numeric value representing sample size.
+#' @param groups Required. Numeric value representing desired number of groups.
+#' @family Utilities
+#' @export
+randomize_groups <- function(n, groups) {
+  if(length(n) != 1L || length(groups) != 1L) {
+    stop("arguments must be a single value")
+  }
+  if(!is.numeric(n) || !is.numeric(groups)) {
+    stop("arguments must be numeric")
+  }
+  .div <- floor(n / groups)
+  .rem <- n %% groups
+  .pool <- rep(seq(groups), .div)
+  if(.rem == 0L) {
+    return(sample(.pool, n, replace = FALSE))
+  } else {
+    return(sample(c(.pool, seq(.rem)), n, replace = FALSE))
+  }
+}
