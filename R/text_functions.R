@@ -69,13 +69,12 @@ synonym_match <- function(x, POS = "ADJECTIVE", dictionary = "C:\\Program Files 
 count_words <- function(x, y, stopwords = TRUE, stem = FALSE) {
     stopifnot(is.character(x), is.character(y))
     if (stopwords) {
-        sw <- paste(tm::stopwords("en"), collapse = "\\b|\\b")
-        sw <- paste0("\\b", sw, "\\b")
-        x <- gsub(sw, " ", x)
-        x <- gsub(sw, " ", y)
+        x <- .rm_stopwords(x)
+        y <- .rm_stopwords(y)
     }
     if (stem) {
         x <- textstem::stem_words(x, "en")
+        y <- textstem::stem_words(y, "en")
     }
     l <- sapply(list(unique(x), unique(y)), clean_text)
     l <- sapply(l, function(x) strsplit(x, split = " "))
@@ -208,11 +207,15 @@ parse_pdf <- function(pdf_path) {
 #' @title Find top words in a text document
 #'
 #' @param x Character. A vector of words from a text document.
+#' @param stopwords Logical. Remove stop words? Uses [tm::stopwords]
 #' @param ... Additional arguments to be passed to [qdap::freq_terms]
 #'
 #' @return
 #' @export
-find_top_words <- function(x, ...) {
+find_top_words <- function(x, stopwords = TRUE, ...) {
+    if (stopwords) {
+    x <- .rm_stopwords(x)
+    }
     if (length(list(...)) != 0L) {
         x <- qdap::freq_terms(text.var = x, ...)
     } else {
@@ -256,4 +259,14 @@ check_spelling <- function(x, return_misspell = TRUE, ...) {
         x <- x[.ms]
     }
     return(x)
+}
+#' @title Remove Stopwords from a string
+#' @param x Character. A vector of words from a text document.
+#' @seealso [tm::stopwords]
+#' @export
+.rm_stopwords <- function(x) {
+    sw <- paste(tm::stopwords("en"), collapse = "\\b|\\b")
+    sw <- paste0("\\b", sw, "\\b")
+    x <- gsub(sw, "", x)
+return(x)
 }
