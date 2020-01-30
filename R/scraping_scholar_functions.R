@@ -287,15 +287,15 @@ build_search <- function(...) {
 
   return(.base)
 }
-#' @title Paginate Website Table
-#' @details just a helper to get the number of pages from a search
-n_pages <- function(html_page) {
-  .pages <- rvest::html_nodes(html_page, ".gs_ab_mdw")
-  .pages <- rvest::html_text(.pages)[2]
-  .pages <-
-    gsub(",", "", sub("About (.*?) results.*", "\\1", .pages))
-  .pages <- as.numeric(.pages) / 10
-  return(.pages)
+#' @title Count Results
+#' @details just a helper to get the number of results from a search
+.count_results <- function(url) {
+  url <- xml2::read_html(x = url)
+  .res <- rvest::html_nodes(url, ".gs_ab_mdw")
+  .res <- rvest::html_text(.res)[2]
+  .res <-
+    gsub(",", "", sub("About (.*?) results.*", "\\1", .res))
+  return(as.numeric(.res))
 }
 #' @title Parse web page
 #' @details Helper function that finds if articles are missing nodes (i.e., Abstracts, links, etc.).
@@ -509,4 +509,12 @@ parsing_helper <- function(.vec) {
     }
     return(.proxy)
   }
+}
+#' @title Get count for results returned from a search string
+#' @return a numeric scalar
+#' @export
+results_count <- function(...) {
+  .res <- build_search(...)[1L]
+  .res <- .count_results(.res)
+  return(.res)
 }
