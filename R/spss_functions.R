@@ -6,7 +6,7 @@ get_spss <- function(dir = getwd(), var.pattern = NULL) {
     if (!dir.exists(dir)) {
         stop("Please specify correct directory")
     }
-    .file_paths <- list.files(dir, pattern = ".sav")
+    .file_paths <- list.files(dir, pattern = ".sav", ignore.case = TRUE)
     if (!length(.file_paths)) {
         stop(sprintf("No .sav files found in %s", dir))
     }
