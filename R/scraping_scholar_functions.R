@@ -33,6 +33,7 @@
 #' res <- build_search("Job satisfaction", article = "10572144307387769361", year = c(2010, 2015), min = 100, max = 200)
 #' }
 #' @export
+#' TODO(clean up arguments passed to ...)
 scrape_scholar <- function(...) {
   .tmp <- paste(c(...))
   if (any(sapply(.tmp, function(x)
@@ -458,7 +459,7 @@ parsing_helper <- function(.vec) {
 #'  to increase scraping speed, lower sampling time.
 .pause <- function(x) {
   .wait <- sample(seq(1, 2, .25), 1) * (1 / (1 / 2.5))
-  .wait <- 2.5 * (.wait * x)
+  .wait <- 10 * (.wait * x)
   message(sprintf("waiting for %.3f seconds...to prevent being blocked", .wait))
 
   Sys.sleep(.wait) # pause to let connection work
