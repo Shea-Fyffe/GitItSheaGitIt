@@ -286,3 +286,11 @@ randomize_groups <- function(n, groups) {
     return(sample(c(.pool, seq(.rem)), n, replace = FALSE))
   }
 }
+#' @title Flatten Recursive List
+flatten <- function(x) {
+  if (!inherits(x, "list")) {
+    return(list(x))
+  } else {
+    return(unlist(c(lapply(x, flatten)), recursive = FALSE))
+  }
+}
