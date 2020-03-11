@@ -66,7 +66,7 @@ synonym_match <- function(x, POS = "ADJECTIVE", dictionary = "C:\\Program Files 
 #' @param stem Logical. Stem words? Uses [textstem::stem_word]
 #' @import tm textstem
 #' @export
-count_words <- function(x, y, stopwords = TRUE, stem = FALSE) {
+count_common_words <- function(x, y, stopwords = TRUE, stem = FALSE) {
     stopifnot(is.character(x), is.character(y))
     if (stopwords) {
         x <- .rm_stopwords(x)
@@ -135,10 +135,14 @@ clean_text <- function(x, lowercase = TRUE, rm_nums = TRUE, convert_nums = FALSE
     })
     if (typeof(x) != "character") {
         stop("Please define x as a character")
-    } else {
-        x <- utf8::utf8_normalize(x, map_quote = T)
     }
     
+    if (any(grepl("I_WAS_NOT_ASCII", iconv(x, "latin1", "ASCII", 
+                                           sub = "I_WAS_NOT_ASCII")))) {
+        x <- gsub("^(\\s*<U\\+\\w+>\\s*)+.*$", "encoding error", x)
+      x <- stringi::stri_trans_general(x, "latin-ascii")
+    }
+
     
     if (rm_nums) {
         x <- gsub("[[:digit:]]", " ", x)
@@ -269,4 +273,74 @@ check_spelling <- function(x, return_misspell = TRUE, ...) {
     sw <- paste0("\\b", sw, "\\b")
     x <- gsub(sw, "", x)
 return(x)
+}
+#' @title Count words in vector of strings
+#' @param x Character. A vector of words from a text document.
+#' @return a numeric vector of lengths
+#' @export
+count_string_words <- function(x) {
+  if(!is.character(x)){
+    stop("x not a character vector")
+  }
+  x <- sapply(gregexpr("[[:alpha:]]+", x), function(x) sum(x > 0))
+  return(x)
+}
+#' @title Find rows in data.frame columns with certain words
+#' @param ... Required. Character. A list of words to find.
+#' @param data Required. Data.frame. A data.frame containing character columns
+#' @param partial Logical/Boolean. Include partial matches?
+#' @param type Character. Either 'and' or 'or' suggesting how matching words in \code{...}
+#' should be treated
+#' @return logical vector with \code{length} equal to \code{nrow(data)}
+#' @export
+has_words <- function(..., data, partial = FALSE, type = "and") {
+  
+  stopifnot({
+    inherits(data, 'data.frame')
+    is.logical(partial)
+    is.character(type)
+  })
+  
+  .char <- sapply(data, is.character)
+  
+  if(sum(.char) == 0) {
+    stop("data contains no valid character columns")
+  }
+  
+  .words <- c(...)
+  if(is.recursive(.words)) {
+      .words <- unlist(.words)
+  }
+  
+  if(partial){
+    .words <- paste0("\\b.*", .words, ".*\\b")
+  } else {
+    .words <- paste0("\\b", .words, "\\b")
+  }
+  
+  if(tolower(type) == "and") {
+      .out <- list()
+      for (w in seq_along(.words)) {
+        .out[[w]] <- apply(data[, .char], 1, function(x) {
+          x <- grepl(.words[w], x)
+          return(any(x))
+        })
+      }
+      
+      .out <- Reduce("&", .out)
+      
+  } else if (tolower(type) == "or") {
+     .words <- paste0(.words, collapse = "|")
+     .out <- apply(data[, .char], 1, function(x) {
+       x <- grepl(.words, x)
+       return(any(x))
+     })
+     
+     
+  } else {
+     stop("type must be one of the follower: 'and' 'or'")
+  }
+  
+
+   return(.out)
 }
