@@ -46,7 +46,7 @@ recode_variables <- function(x, vars, old_values = NULL, new_values = NULL) {
         stop(sprintf("Old values are missing: %s\n", setdiff(.temp, old_values)))
     }
     if (length(vars) > 1) {
-        x[, vars] <- apply(x[, vars], 2, function(x) plyr::mapvalues(x, from = old_values, 
+        x[, vars] <- apply(x[, vars], 2, function(x) plyr::mapvalues(x, from = old_values,
             to = new_values))
     } else {
         x[, vars] <- plyr::mapvalues(x[, vars], from = old_values, to = new_values)
@@ -64,7 +64,7 @@ recode_variables <- function(x, vars, old_values = NULL, new_values = NULL) {
 create_subscale <- function(x, FUNCT, pattern = NULL) {
   if (!inherits(x, "data.frame")) {
     stop("x must be a data.frame")
-  }  
+  }
   if(!is.null(pattern)) {
       if(length(pattern) > 1) {
         pattern <- paste0(pattern, collapse = "|")
@@ -74,25 +74,16 @@ create_subscale <- function(x, FUNCT, pattern = NULL) {
   x <- apply(x, 1, FUN = FUNCT)
   return(x)
 }
-#' @title Calculate average of set of variables
-#' @author Shea Fyffe email: shea.fyffe@@gmail.com
-#' @param x Required. Data.frame containing variables to average
-#' @param pat Required. Pattern of variable names to select columns. May use Regex.
-#' @param new_col Required. Name of new column to be created.
-#' @family SPSS
-mean_subscale <- function(x, pat, new_col) {
-    x[, new_col] <- apply(x[grep(pat, names(x))], 1, function(x) mean(x, na.rm = TRUE))
-    return(x)
-}
-
 #' @title Identify all variables in a dataframe given a pattern
 #' @author Shea Fyffe email: shea.fyffe@@gmail.com
 #' @param x Required. Data.frame containing variables to index
-#' @param pat Required. Pattern of variable names to select columns. May use Regex.
+#' @param pattern Required. Pattern of variable names to select columns. May use Regex.
 #' @param ... Optional. Additional arguments to pass to grepl.
 #' @seealso [base::grep()]
 #' @family SPSS
+#' @export
 get_vars <- function(x, pat, ...) {
     .out <- names(x)[grepl(y, names(x), ...)]
     return(.out)
 }
+
