@@ -42,7 +42,7 @@ get_pdf_text <- function(.dir = getwd(), clean = TRUE, ...) {
 #' @seealso [wordnet::setDict()]
 #' @import reshape2 wordnet
 #' @export
-synonym_match <- function(x, POS = "ADJECTIVE", dictionary = "C:\\Program Files (x86)\\WordNet\\2.1", 
+synonym_match <- function(x, POS = "ADJECTIVE", dictionary = "C:\\Program Files (x86)\\WordNet\\2.1",
     drop = TRUE) {
     .home <- gsub("*\\\\dict", "", dictionary)
     Sys.setenv(WNHOME = .home)
@@ -84,11 +84,11 @@ count_common_words <- function(x, y, stopwords = TRUE, stem = FALSE) {
             n
         })
     })
-    
+
     res <- as.data.frame(res)
     names(res) <- l[[1]]
     res[, "doc_y"] <- l[[2]]
-    res <- tidyr::gather_(res, "doc_x", "common_word_count", names(res)[names(res) != 
+    res <- tidyr::gather_(res, "doc_x", "common_word_count", names(res)[names(res) !=
         "doc_y"], na.rm = T)
     return(res)
 }
@@ -126,9 +126,10 @@ wrap_text <- function(txt, pattern) {
 #' @param x character vector of words or sentences.
 #' @param rm_nums Logical. Only keep words, hyphens and spaces?
 #' @param convert_nums Logical. Update numbers to words?
+#' @param convert_contract Logical. Convert contractions to base words?
 #' @import qdap
 #' @export
-clean_text <- function(x, lowercase = TRUE, rm_nums = TRUE, convert_nums = FALSE, rm_punct = TRUE, 
+clean_text <- function(x, lowercase = TRUE, rm_nums = TRUE, convert_nums = FALSE, convert_contract = TRUE, rm_punct = TRUE,
     rm_whitespace = TRUE) {
     stopifnot({
         sapply(c(lowercase, rm_nums, convert_nums, rm_punct, rm_whitespace), is.logical)
@@ -136,49 +137,53 @@ clean_text <- function(x, lowercase = TRUE, rm_nums = TRUE, convert_nums = FALSE
     if (typeof(x) != "character") {
         stop("Please define x as a character")
     }
-    
-    if (any(grepl("I_WAS_NOT_ASCII", iconv(x, "latin1", "ASCII", 
+
+    if (any(grepl("I_WAS_NOT_ASCII", iconv(x, "latin1", "ASCII",
                                            sub = "I_WAS_NOT_ASCII")))) {
         x <- gsub("^(\\s*<U\\+\\w+>\\s*)+.*$", "encoding error", x)
       x <- stringi::stri_trans_general(x, "latin-ascii")
     }
 
-    
-    if (rm_nums) {
+    if (convert_nums) {
+      if (any(grepl("[[:digit:]]", x))) {
+        x <- qdap::replace_number(x)
+        x <- qdap::replace_ordinal(x)
+      }
+    }  else if (rm_nums) {
         x <- gsub("[[:digit:]]", " ", x)
-    } else {
-        if (convert_nums) {
-            if (any(grepl("[[:digit:]]", x))) {
-                x <- qdap::replace_number(x)
-                x <- qdap::replace_ordinal(x)
-            }
-        }
     }
-    
+
+    if (convert_contract) {
+      x <- qdap::replace_contraction(x)
+    }
+
     if (rm_punct) {
-        x <- qdap::replace_contraction(x)
         x <- gsub("[^[:alnum:]\\s]", " ", x)
     }
-    
+
+    if (any(grepl("^\\s*$", x))) {
+      x[grep("^\\s*$", x)] <- "NA"
+    }
+
     if (rm_whitespace) {
         x <- gsub("\\s+", " ", x)
         x <- gsub("^\\s+|\\s+$", "", x)
         x <- x[x != ""]
     }
-    
+
     if (lowercase) {
         x <- tolower(x)
     }
-    
+
     return(x)
 }
 #' @title Capture text between two characters
 #' @author Shea Fyffe, \email{shea.fyffe@@gmail.com}
 #' @param x character vector of words or sentences.
 #' @param between character vector of length 2 containing boundary characters
-extract_text_between <- function(x, between = c(".*", ".*")) {
+extract_text_between <- function(x, between = c(".*", ".*"), ...) {
     .pattern <- sprintf("%s(.*?)%s", between[1], between[2])
-    .x <- regmatches(x, regexec(.pattern, x))
+    .x <- regmatches(x, regexec(.pattern, x, ...))
     return(.x)
 }
 #' @title Parse PDF article
@@ -212,13 +217,16 @@ parse_pdf <- function(pdf_path) {
 #'
 #' @param x Character. A vector of words from a text document.
 #' @param stopwords Logical. Remove stop words? Uses [tm::stopwords]
+#' @param stem Logical. Stem words? Uses [textstem::stem_word]
 #' @param ... Additional arguments to be passed to [qdap::freq_terms]
-#'
 #' @return
 #' @export
-find_top_words <- function(x, stopwords = TRUE, ...) {
+find_top_words <- function(x, stopwords = TRUE, stem = FALSE, ...) {
     if (stopwords) {
     x <- .rm_stopwords(x)
+    }
+    if (stem) {
+      x <- textstem::stem_words(x, "en")
     }
     if (length(list(...)) != 0L) {
         x <- qdap::freq_terms(text.var = x, ...)
@@ -294,30 +302,30 @@ count_string_words <- function(x) {
 #' @return logical vector with \code{length} equal to \code{nrow(data)}
 #' @export
 has_words <- function(..., data, partial = FALSE, type = "and") {
-  
+
   stopifnot({
     inherits(data, 'data.frame')
     is.logical(partial)
     is.character(type)
   })
-  
+
   .char <- sapply(data, is.character)
-  
+
   if(sum(.char) == 0) {
     stop("data contains no valid character columns")
   }
-  
+
   .words <- c(...)
   if(is.recursive(.words)) {
       .words <- unlist(.words)
   }
-  
+
   if(partial){
     .words <- paste0("\\b.*", .words, ".*\\b")
   } else {
     .words <- paste0("\\b", .words, "\\b")
   }
-  
+
   if(tolower(type) == "and") {
       .out <- list()
       for (w in seq_along(.words)) {
@@ -326,21 +334,21 @@ has_words <- function(..., data, partial = FALSE, type = "and") {
           return(any(x))
         })
       }
-      
+
       .out <- Reduce("&", .out)
-      
+
   } else if (tolower(type) == "or") {
      .words <- paste0(.words, collapse = "|")
      .out <- apply(data[, .char], 1, function(x) {
        x <- grepl(.words, x)
        return(any(x))
      })
-     
-     
+
+
   } else {
      stop("type must be one of the follower: 'and' 'or'")
   }
-  
+
 
    return(.out)
 }
