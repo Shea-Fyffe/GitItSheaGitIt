@@ -29,7 +29,7 @@ preprocess_text <- function(x, expand_contractions = TRUE, split = NULL, ...) {
 #' @export
 #'
 #' @examples
-create_lexicon <- function(x, doc_prop_max = 1, word_min = 5, word_max = Inf, ...) {
+create_lexicon <- function(x, doc_prop_max = 1, word_min = 5, word_max = Inf, out_dtm = FALSE, ...) {
   if(!is.character(x)) {
     stop("x is not a character vector")
   }
@@ -39,6 +39,9 @@ create_lexicon <- function(x, doc_prop_max = 1, word_min = 5, word_max = Inf, ..
                                        term_count_min = word_min,
                                        term_count_max = word_max, ...)
   .vec <- text2vec::vocab_vectorizer(.vocab)
+  if(out_dtm) {
+    return(text2vec::create_dtm(.it, .vec))
+  }
   return(list(tkn = .it, vec = .vec, vocab = .vocab))
 }
 #' @title
@@ -89,11 +92,19 @@ create_doc_vectors <- function(text, word_vec, has_words = FALSE, mean_vec = TRU
   return(t(.res))
 }
 
-plot_rstne <- function(mat, group, labs, ...) {
-  .guid <- apply(mat, 1, paste0, collapse = "")
-  .indx <- which(!duplicated(.guid))
-  tsne_out <- Rtsne::Rtsne(as.matrix(mat[.indx,]), ...) # Run TSNE
-  plot(tsne_out$Y, col = group[.indx], xlab = "word2vecx", ylab = "word2vecy", main = "t-SNE of Personality Items",
+plot_rstne <- function(mat, group, labs = NULL, plot = FALSE, ...) {
+  if(is.character(group)) {
+    group <- as.factor(group)
+  }
+  .pal <- viridisLite::viridis(n = length(levels(group)))
+  tsne_out <- Rtsne::Rtsne(as.matrix(mat), check_duplicates = F, ...)# Run TSNE
+  if(plot) {
+  plot(tsne_out$Y, col = .pal[group], xlab = "word2vecx", ylab = "word2vecy", main = "t-SNE of Personality Items",
        asp = 1)
-  text(tsne_out$Y, pos = 3, labels = labs[.indx], cex = .75)# Plot the result
+    if(!is.null(labs)) {
+    text(tsne_out$Y, pos = 3, labels = labs, cex = .75)# Plot the result
+    }
+  } else {
+    return(tsne_out)
+  }
 }
