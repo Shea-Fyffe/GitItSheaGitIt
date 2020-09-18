@@ -76,21 +76,74 @@ create_gloVe_embeddings <- function(text, skip_win = 5L, co_occur_max = 100L, wo
 #' @export
 #'
 #' @examples
-create_doc_vectors <- function(text, word_vec, has_words = FALSE, mean_vec = TRUE) {
-  if(!inherits(word_vec, "data.frame")) {
-    word_vec <- as.data.frame(word_vec)
+create_doc_vectors <-
+  function(text,
+           word_vec,
+           has_words_as_row_names = TRUE,
+           mean_vec = TRUE,
+           wts = NULL,
+           FUN = NULL) {
+    .wordEmbed_helper <- function(.res, wts, FUN) {
+      if (is.null(wts) && is.null(FUN)) {
+        return(.res)
+      }
+      .n <- sapply(.res, nrow)
+      if (!is.null(wts)) {
+        if (length(wts) == 1)
+          wts <- rep(wts, sum(.n))
+        if (length(wts) != sum(.n)) {
+          warning(
+            "weights argument must be equal to number of valid words in text returning object for inspection"
+          )
+          return(.res)
+        } else {
+          .indx <- rep(seq_along(.n), .n)
+          .res <- do.call(rbind, .res)
+          .f <- ncol(.res)
+          .wvals <- unique(wts)
+          if (all(.wvals %in% c(1, 0))) {
+            wts <- as.logical(wts)
+            .res <- split(as.data.frame(.res[wts, ]), .indx[wts])
+          } else {
+            .wres <- sweep(x = .res,
+                           MARGIN = 1,
+                           STATS = wts,
+                           `*`)
+            .res <- split(as.data.frame(.wres), .indx)
+          }
+        }
+      }
+      if (!is.null(FUN)) {
+        .res <- sapply(unlist(.res, recursive = F), function(x) {
+          x <- FUN(x)
+        })
+        .res <- matrix(.res, ncol = .f, byrow = T)
+      }
+      return(.res)
+    }
+    if (!inherits(word_vec, "data.frame")) {
+      word_vec <- as.data.frame(word_vec)
+    }
+    if (has_words_as_row_names || !is.character(word_vec[, 1])) {
+      word_vec <- data.frame(row.names(word_vec), word_vec)
+    }
+    if (!all(sapply(word_vec[, -1], is.numeric))) {
+      word_vec[, -1] <- sapply(word_vec[, -1], as.numeric)
+    }
+    if (!mean_vec || !is.null(wts)) {
+      .res <- softmaxreg::wordEmbed(text, word_vec, meanVec = FALSE)
+      if (is.null(FUN)) {
+        .res <- .wordEmbed_helper(.res, wts, FUN = mean)
+      } else {
+        .res <- .wordEmbed_helper(.res, wts, FUN)
+      }
+    } else {
+      .res <- softmaxreg::wordEmbed(text, word_vec, meanVec = mean_vec)
+    }
+    
+    return(.res)
   }
-  if(!has_words) {
-    word_vec <- data.frame(row.names(word_vec), word_vec)
-  }
-  if(!all(sapply(word_vec[-1], is.numeric))) {
-    word_vec[-1] <- sapply(word_vec[-1], as.numeric)
-  }
-  .res <- sapply(text, function(.x) {
-    .x <- softmaxreg::wordEmbed(.x, word_vec, meanVec = mean_vec)
-  })
-  return(t(.res))
-}
+
 
 plot_rstne <- function(mat, group, labs = NULL, plot = FALSE, ...) {
   if(is.character(group)) {
